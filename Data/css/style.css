@@ -38,7 +38,7 @@ header h1 {
   font-size: 14px;
 }
 
-.filters input {
+.filters select {
   padding: 5px;
   margin-left: 5px;
 }
@@ -58,12 +58,13 @@ button:hover {
 }
 
 .table-container {
-  max-width: 900px;
+  max-width: 95%;
   margin: 20px auto;
   background: #fff;
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  overflow: hidden;
+  overflow-x: auto;
+  text-align: center;
 }
 
 table {
@@ -77,12 +78,17 @@ thead {
 
 th, td {
   padding: 10px;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #eee;
 }
 
 tr:hover {
   background: #f9fafb;
+}
+
+.load-more {
+  text-align: center;
+  padding: 15px;
 }
 
 footer {
