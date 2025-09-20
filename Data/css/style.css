@@ -43,7 +43,7 @@ header h1 {
   margin-left: 5px;
 }
 
-button {
+button, .link-button {
   background: #2563eb;
   color: #fff;
   border: none;
@@ -51,10 +51,15 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  text-decoration: none;
 }
 
-button:hover {
+button:hover, .link-button:hover {
   background: #1d4ed8;
+}
+
+.link-button {
+  display: inline-block;
 }
 
 .table-container {
