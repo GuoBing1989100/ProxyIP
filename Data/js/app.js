@@ -1,15 +1,15 @@
 // Data/js/app.js
 
 // 全局状态
-let proxyData = [];        // 原始数据
-let filteredData = [];     // 筛选后数据
-let countryMap = {};       // 从 countries.json 加载的映射：代码 -> 中文名
-let pageSize = 50;         // 每次显示条数
-let shownCount = 0;        // 当前已显示条数
-let clockTimer = null;     // 时钟定时器
-let autoRefreshTimer = null; // 自动刷新定时器
+let proxyData = [];          // 原始数据
+let filteredData = [];       // 筛选后数据
+let countryMap = {};         // 从 countries.json 加载（代码 -> 中文名），仅用于下拉显示
+let pageSize = 50;           // 每次新增显示条数
+let shownCount = 0;          // 当前已显示数量
+let clockTimer = null;       // 时钟计时器
+let autoRefreshTimer = null; // 自动刷新计时器（默认 10 分钟）
 
-// ========== 核心加载 ==========
+// ========== 加载配置与数据 ==========
 async function loadCountryMap() {
   try {
     const res = await fetch("./countries.json");
@@ -28,9 +28,12 @@ async function loadData() {
     const text = await res.text();
 
     proxyData = parseAliveText(text);
+    // 默认不过滤
     filteredData = proxyData.slice();
 
-    generateFilters(filteredData);
+    // 每次加载数据后都用当前数据刷新下拉
+    generateFilters(proxyData);
+    // 渲染
     resetAndRender();
   } catch (err) {
     console.error("读取 alive.txt 失败:", err);
@@ -42,7 +45,7 @@ async function loadData() {
 }
 
 function parseAliveText(text) {
-  // 行格式：IP,端口,国家代码,提供商(可含逗号)
+  // 每行：IP,端口,国家代码,提供商(可能含逗号)
   return text
     .trim()
     .split("\n")
@@ -53,11 +56,74 @@ function parseAliveText(text) {
       const port = (parts[1] || "").trim();
       const country = (parts[2] || "").trim();
       const provider = parts.slice(3).join(",").trim();
-      return { ip: ip || "-", port: port || "-", country: country || "-", provider: provider || "-" };
+      return {
+        ip: ip || "-",
+        port: port || "-",
+        country: country || "-",
+        provider: provider || "-"
+      };
     });
 }
 
 // ========== 过滤与渲染 ==========
+function generateFilters(data) {
+  const countrySelect = document.getElementById("filter-country");
+  const portSelect = document.getElementById("filter-port");
+  if (!countrySelect || !portSelect) return;
+
+  // 记录之前选择，便于更新后恢复
+  const prevCountry = countrySelect.value || "";
+  const prevPort = portSelect.value || "";
+
+  const countries = [...new Set(data.map(e => e.country))].filter(Boolean).sort();
+  const ports = [...new Set(data.map(e => e.port))]
+    .filter(Boolean)
+    .sort((a, b) => {
+      const na = Number(a), nb = Number(b);
+      if (Number.isNaN(na) || Number.isNaN(nb)) return ("" + a).localeCompare("" + b);
+      return na - nb;
+    });
+
+  // 国家：值用英文代码，显示中文
+  countrySelect.innerHTML = `<option value="">全部</option>`;
+  countries.forEach(code => {
+    const opt = document.createElement("option");
+    opt.value = code;
+    opt.textContent = countryMap[code] || code;
+    countrySelect.appendChild(opt);
+  });
+
+  // 端口
+  portSelect.innerHTML = `<option value="">全部</option>`;
+  ports.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    portSelect.appendChild(opt);
+  });
+
+  // 恢复选择（如果依然存在）
+  if ([...countrySelect.options].some(o => o.value === prevCountry)) {
+    countrySelect.value = prevCountry;
+  }
+  if ([...portSelect.options].some(o => o.value === prevPort)) {
+    portSelect.value = prevPort;
+  }
+}
+
+function filterData() {
+  const countryVal = document.getElementById("filter-country").value; // 英文代码
+  const portVal = document.getElementById("filter-port").value;
+
+  filteredData = proxyData.filter(item => {
+    const okCountry = countryVal ? item.country === countryVal : true;
+    const okPort = portVal ? item.port === portVal : true;
+    return okCountry && okPort;
+  });
+
+  resetAndRender();
+}
+
 function resetAndRender() {
   shownCount = pageSize;
   renderTable();
@@ -71,23 +137,24 @@ function renderTable() {
 
   if (!filteredData.length) {
     tbody.innerHTML = `<tr><td colspan="4">无数据</td></tr>`;
-    document.getElementById("btn-load-more").style.display = "none";
+    const moreBtn = document.getElementById("btn-load-more");
+    if (moreBtn) moreBtn.style.display = "none";
     return;
   }
 
   const end = Math.min(shownCount, filteredData.length);
-  const batch = filteredData.slice(0, end);
+  const slice = filteredData.slice(0, end);
 
-  for (const e of batch) {
+  slice.forEach(e => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${e.ip}</td>
       <td>${e.port}</td>
-      <td>${e.country}</td> <!-- 表格里保持原始英文国家代码 -->
+      <td>${e.country}</td>  <!-- 表格内保持原始英文代码 -->
       <td>${e.provider}</td>
     `;
     tbody.appendChild(tr);
-  }
+  });
 
   const moreBtn = document.getElementById("btn-load-more");
   if (moreBtn) {
@@ -100,85 +167,40 @@ function handleLoadMore() {
   renderTable();
 }
 
-function filterData() {
-  const countryVal = document.getElementById("filter-country").value; // 值为英文代码
-  const portVal = document.getElementById("filter-port").value;
-
-  filteredData = proxyData.filter(item => {
-    const byCountry = countryVal ? item.country === countryVal : true;
-    const byPort = portVal ? item.port === portVal : true;
-    return byCountry && byPort;
-  });
-
-  resetAndRender();
-}
-
-// ========== 下拉选项 ==========
-function generateFilters(data) {
-  const countrySelect = document.getElementById("filter-country");
-  const portSelect = document.getElementById("filter-port");
-  if (!countrySelect || !portSelect) return;
-
-  // 保留当前选择
-  const prevCountry = countrySelect.value || "";
-  const prevPort = portSelect.value || "";
-
-  // 国家列表（去重、排序）
-  const countries = [...new Set(data.map(e => e.country))].filter(Boolean).sort();
-
-  // 端口列表（去重、数字排序）
-  const ports = [...new Set(data.map(e => e.port))].filter(Boolean).sort((a, b) => {
-    const na = Number(a), nb = Number(b);
-    if (Number.isNaN(na) || Number.isNaN(nb)) return ("" + a).localeCompare("" + b);
-    return na - nb;
-  });
-
-  // 国家下拉：显示中文，值用英文代码
-  countrySelect.innerHTML = `<option value="">全部</option>`;
-  for (const code of countries) {
-    const opt = document.createElement("option");
-    opt.value = code;
-    opt.textContent = countryMap[code] || code;
-    countrySelect.appendChild(opt);
-  }
-
-  // 端口下拉
-  portSelect.innerHTML = `<option value="">全部</option>`;
-  for (const p of ports) {
-    const opt = document.createElement("option");
-    opt.value = p;
-    opt.textContent = p;
-    portSelect.appendChild(opt);
-  }
-
-  // 恢复之前的选择（若仍然存在）
-  if ([...countrySelect.options].some(o => o.value === prevCountry)) {
-    countrySelect.value = prevCountry;
-  }
-  if ([...portSelect.options].some(o => o.value === prevPort)) {
-    portSelect.value = prevPort;
-  }
-}
-
-// ========== 工具按钮 ==========
+// ========== 实用功能 ==========
 function copyIPs() {
-  const list = filteredData.map(e => e.ip).join("\n");
-  if (!list) return alert("暂无可复制的 IP");
-  navigator.clipboard.writeText(list).then(() => alert("已复制全部 IP"));
+  const text = filteredData.map(e => e.ip).join("\n");
+  if (!text) return alert("暂无可复制的 IP");
+  navigator.clipboard.writeText(text).then(() => alert("已复制全部 IP"));
 }
 
 function copyAll() {
-  const list = filteredData.map(e => `${e.ip},${e.port},${e.country},${e.provider}`).join("\n");
-  if (!list) return alert("暂无可复制的信息");
-  navigator.clipboard.writeText(list).then(() => alert("已复制全部信息"));
+  const text = filteredData.map(e => `${e.ip},${e.port},${e.country},${e.provider}`).join("\n");
+  if (!text) return alert("暂无可复制的信息");
+  navigator.clipboard.writeText(text).then(() => alert("已复制全部信息"));
 }
 
 function manualRefresh() {
-  // 手动刷新：重新拉取 alive.txt，并保持下拉映射与选择
-  loadData();
+  // 手动刷新：重新加载数据，保留当前选择
+  const countryVal = document.getElementById("filter-country").value;
+  const portVal = document.getElementById("filter-port").value;
+
+  loadData().then(() => {
+    // 恢复并应用筛选
+    const cs = document.getElementById("filter-country");
+    const ps = document.getElementById("filter-port");
+    if (cs && [...cs.options].some(o => o.value === countryVal)) cs.value = countryVal;
+    if (ps && [...ps.options].some(o => o.value === portVal)) ps.value = portVal;
+    filterData();
+  });
 }
 
 // ========== 时钟与自动刷新 ==========
+function updateClock() {
+  const el = document.getElementById("current-time");
+  if (el) el.textContent = "当前时间: " + new Date().toLocaleTimeString();
+}
+
 function startClock() {
   stopClock();
   updateClock();
@@ -192,22 +214,14 @@ function stopClock() {
   }
 }
 
-function updateClock() {
-  const el = document.getElementById("current-time");
-  if (el) {
-    el.textContent = "当前时间: " + new Date().toLocaleTimeString();
-  }
-}
-
 function startAutoRefresh(intervalMs = 10 * 60 * 1000) { // 默认 10 分钟
   stopAutoRefresh();
   autoRefreshTimer = setInterval(() => {
-    // 自动刷新时，保留当前筛选条件
+    // 自动刷新时保留选择
     const countryVal = document.getElementById("filter-country").value;
     const portVal = document.getElementById("filter-port").value;
 
     loadData().then(() => {
-      // 恢复筛选条件并应用
       const cs = document.getElementById("filter-country");
       const ps = document.getElementById("filter-port");
       if (cs && [...cs.options].some(o => o.value === countryVal)) cs.value = countryVal;
@@ -224,7 +238,7 @@ function stopAutoRefresh() {
   }
 }
 
-// ========== 初始化 ==========
+// ========== 事件绑定 ==========
 function bindEvents() {
   const btnFilter = document.getElementById("btn-filter");
   const btnRefresh = document.getElementById("btn-refresh");
@@ -238,17 +252,18 @@ function bindEvents() {
   if (btnCopyAll) btnCopyAll.addEventListener("click", copyAll);
   if (btnLoadMore) btnLoadMore.addEventListener("click", handleLoadMore);
 
-  // 选择变化立即筛选（可选，如果你想实时筛选可以开启）
+  // 下拉变化时立即筛选（更顺手）
   const countrySelect = document.getElementById("filter-country");
   const portSelect = document.getElementById("filter-port");
   if (countrySelect) countrySelect.addEventListener("change", filterData);
   if (portSelect) portSelect.addEventListener("change", filterData);
 }
 
+// ========== 启动入口 ==========
 document.addEventListener("DOMContentLoaded", async () => {
   bindEvents();
   startClock();
-  await loadCountryMap(); // 先加载中文映射
-  await loadData();       // 再加载数据并渲染
+  await loadCountryMap(); // 先加载中文映射（用于下拉显示）
+  await loadData();       // 再加载 alive.txt 并渲染
   startAutoRefresh();     // 每 10 分钟自动刷新一次
 });
