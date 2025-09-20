@@ -2,22 +2,23 @@ let proxyData = [];
 
 async function loadData() {
   try {
-    const res = await fetch("../Data/alive.txt?_=" + Date.now(), { cache: "no-store" });
+    const res = await fetch("./alive.txt?_=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
     const text = await res.text();
 
     proxyData = text.trim().split("\n").map(line => {
       const [ip, port, country, ...providerParts] = line.split(",");
       return {
-        ip: ip.trim(),
-        port: port.trim(),
-        country: country.trim(),
-        provider: providerParts.join(",").trim()
+        ip: ip?.trim() || "-",
+        port: port?.trim() || "-",
+        country: country?.trim() || "-",
+        provider: providerParts.join(",").trim() || "-"
       };
     });
 
     renderTable(proxyData);
   } catch (err) {
-    console.error("读取 Data/alive.txt 失败:", err);
+    console.error("读取 alive.txt 失败:", err);
     document.getElementById("proxy-table").innerHTML =
       `<tr><td colspan="4">加载失败</td></tr>`;
   }
@@ -69,6 +70,7 @@ function updateClock() {
 }
 
 document.getElementById("btn-filter").addEventListener("click", filterData);
+document.getElementById("btn-refresh").addEventListener("click", loadData);
 document.getElementById("btn-copy-ip").addEventListener("click", copyIPs);
 document.getElementById("btn-copy-all").addEventListener("click", copyAll);
 
