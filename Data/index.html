@@ -13,10 +13,14 @@
 
   <section class="filters">
     <label>国家:
-      <input type="text" id="filter-country" placeholder="如 AT / US">
+      <select id="filter-country">
+        <option value="">全部</option>
+      </select>
     </label>
     <label>端口:
-      <input type="text" id="filter-port" placeholder="如 443">
+      <select id="filter-port">
+        <option value="">全部</option>
+      </select>
     </label>
     <button id="btn-filter">筛选</button>
     <button id="btn-refresh">刷新数据</button>
@@ -38,6 +42,9 @@
         <tr><td colspan="4">加载中...</td></tr>
       </tbody>
     </table>
+    <div class="load-more">
+      <button id="btn-load-more">显示更多</button>
+    </div>
   </section>
 
   <footer>
