@@ -43,7 +43,7 @@ header h1 {
   margin-left: 5px;
 }
 
-button, .red-button {
+button {
   background: #2563eb; /* 默认蓝色 */
   color: #fff;
   border: none;
@@ -51,8 +51,6 @@ button, .red-button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  text-decoration: none;
-  display: inline-block;
 }
 
 button:hover {
@@ -60,11 +58,11 @@ button:hover {
 }
 
 /* 红色按钮样式 */
-.red-button {
+#btn-red-link {
   background: #dc2626;
 }
 
-.red-button:hover {
+#btn-red-link:hover {
   background: #b91c1c;
 }
 
