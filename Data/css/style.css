@@ -43,8 +43,8 @@ header h1 {
   margin-left: 5px;
 }
 
-button, .link-button {
-  background: #2563eb;
+button, .red-button {
+  background: #2563eb; /* 默认蓝色 */
   color: #fff;
   border: none;
   padding: 6px 12px;
@@ -52,14 +52,20 @@ button, .link-button {
   cursor: pointer;
   font-size: 14px;
   text-decoration: none;
+  display: inline-block;
 }
 
-button:hover, .link-button:hover {
+button:hover {
   background: #1d4ed8;
 }
 
-.link-button {
-  display: inline-block;
+/* 红色按钮样式 */
+.red-button {
+  background: #dc2626;
+}
+
+.red-button:hover {
+  background: #b91c1c;
 }
 
 .table-container {
