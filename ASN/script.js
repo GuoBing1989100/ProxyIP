@@ -1,7 +1,7 @@
 // 获取 IP 信息（使用 ipwhois.app，支持 HTTPS）
 async function fetchIPInfo(ip){
   const url = `https://ipwhois.app/json/${encodeURIComponent(ip)}`;
-  const res = await fetch(url, { headers:{ 'Accept':'application/json' } });
+  const res = await fetch(url);
   const data = await res.json();
   return {
     ip: data.ip || ip,
@@ -12,12 +12,12 @@ async function fetchIPInfo(ip){
       if (/^\d+$/.test(String(data.asn||''))) return String(data.asn);
       return '';
     })(),
-    org: data.org || (data.connection && data.connection.org) || '',
-    isp: data.isp || (data.connection && data.connection.isp) || '',
+    org: data.org || '',
+    isp: data.isp || '',
     country: data.country || '',
     city: data.city || '',
     lat: data.latitude, lon: data.longitude,
-    timezone: data.timezone || data.timezone_name || ''
+    timezone: data.timezone || ''
   };
 }
 
@@ -67,12 +67,22 @@ queryBtn.addEventListener('click', async ()=>{
 const asnModal=document.getElementById('asnModal');
 const asnContent=document.getElementById('asnContent');
 const asnClose=document.getElementById('asnClose');
+const historyDate=document.getElementById('historyDate');
+const historyBtn=document.getElementById('historyBtn');
+const historySummary=document.getElementById('historySummary');
+const historyList=document.getElementById('historyList');
+
+let currentASN = '';
+let currentInfo = null;
 
 // 点击 ASN 链接 → 打开详情
 document.addEventListener('click', (e)=>{
   const a=e.target.closest('a.asn-link'); if(!a)return;
   const info=JSON.parse(decodeURIComponent(a.getAttribute('data-json')));
-  const asnDisplay = info.asnText || (info.asnNum ? `AS${info.asnNum}` : 'N/A');
+  currentInfo = info;
+  currentASN = info.asnNum || ((info.asnText||'').match(/AS(\d+)/i)?.[1] || '');
+
+  const asnDisplay = info.asnText || (currentASN ? `AS${currentASN}` : 'N/A');
   asnContent.innerHTML=`
     <p><b>IP 地址：</b> ${info.ip}</p>
     <p><b>自治系统号 (ASN)：</b> ${asnDisplay}</p>
@@ -83,6 +93,16 @@ document.addEventListener('click', (e)=>{
     <p><b>经纬度：</b> ${(info.lat!=null && info.lon!=null)?info.lat+', '+info.lon:'N/A'}</p>
     <p><b>时区：</b> ${info.timezone||'N/A'}</p>
   `;
+
+  // 默认日期设为今天 UTC
+  const todayUTC = new Date();
+  const yyyy = todayUTC.getUTCFullYear();
+  const mm = String(todayUTC.getUTCMonth()+1).padStart(2,'0');
+  const dd = String(todayUTC.getUTCDate()).padStart(2,'0');
+  historyDate.value = `${yyyy}-${mm}-${dd}`;
+  historySummary.textContent = '';
+  historyList.innerHTML = '';
+
   asnModal.style.display='flex';
 });
 
@@ -90,3 +110,37 @@ document.addEventListener('click', (e)=>{
 asnClose.addEventListener('click', ()=>{ asnModal.style.display='none'; });
 asnModal.addEventListener('click', (e)=>{ if(e.target===asnModal) asnModal.style.display='none'; });
 document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') asnModal.style.display='none'; });
+
+// 查以往按钮
+historyBtn.addEventListener('click', async ()=>{
+  if(!currentASN){ historySummary.textContent='未识别到 ASN 编号。'; return; }
+  const d = historyDate.value;
+  if(!d){ historySummary.textContent='请先选择日期。'; return; }
+  historySummary.textContent = '查询中…';
+  historyList.innerHTML = '';
+
+  const start = `${d}T00:00:00`;
+  const end   = `${d}T23:59:59`;
+  const url = `https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS${encodeURIComponent(currentASN)}&starttime=${encodeURIComponent(start)}&endtime=${encodeURIComponent(end)}`;
+
+  try {
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('RIPEstat 请求失败');
+    const json = await res.json();
+    const prefixes = (json && json.data && json.data.prefixes) ? json.data.prefixes : [];
+    const uniqSet = new Set(prefixes.map(p=>p.prefix || p));
+    const uniq = Array.from(uniqSet);
+
+    historySummary.textContent = `日期：${d} (UTC)，公告前缀数量：${uniq.length}`;
+    if(uniq.length === 0){
+      historyList.innerHTML = '<div class="small-note">该日期区间未检索到前缀公告数据或 ASN 未公告。</div>';
+    }else{
+      const sample = uniq.slice(0, 50);
+      historyList.innerHTML = sample.map(px=>`<div class="pill">${px}</div>`).join('') +
+        (uniq.length>50 ? `<div class="small-note">仅显示前 50 条，共 ${uniq.length} 条。</div>` : '');
+    }
+  } catch(err) {
+    historySummary.textContent = '查询失败：' + (err && err.message ? err.message : '网络或服务错误');
+    historyList.innerHTML = '';
+  }
+});
