@@ -1,0 +1,64 @@
+:root {
+  --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
+  --cyan:#00eaff; --blue:#0072ff; --pink:#ff4081; --text:#e0e0e0;
+}
+body {
+  margin:0; padding:0;
+  font-family:'Orbitron','Roboto Mono',system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif;
+  color:var(--text);
+  background:radial-gradient(circle at 20% 0%, var(--bg1), var(--bg2), var(--bg3));
+  display:flex; flex-direction:column; align-items:center;
+  min-height:100vh; padding:20px;
+}
+h2 { margin:10px 0 20px; color:var(--cyan); text-shadow:0 0 10px var(--cyan),0 0 20px var(--cyan); }
+textarea {
+  width:90%; max-width:700px; height:150px;
+  background:rgba(20,20,30,0.85); color:#fff;
+  border:1px solid var(--cyan); border-radius:10px;
+  box-shadow:0 0 12px var(--cyan) inset;
+  padding:12px; font-size:14px; resize:none; outline:none;
+}
+button {
+  margin:15px; padding:12px 26px; font-size:15px; color:#fff;
+  background:linear-gradient(90deg,var(--cyan),var(--blue));
+  border:none; border-radius:28px; cursor:pointer;
+  transition:all .25s ease; box-shadow:0 0 14px var(--cyan);
+}
+button:hover {
+  background:linear-gradient(90deg,var(--blue),var(--cyan));
+  box-shadow:0 0 24px var(--cyan),0 0 36px var(--blue);
+  transform:translateY(-1px);
+}
+#msg { min-height:22px; color:var(--pink); }
+table {
+  width:95%; max-width:1000px; border-collapse:collapse; margin-top:18px;
+  background:rgba(15,25,35,0.85); border-radius:12px; overflow:hidden;
+}
+th,td { padding:10px; text-align:center; border-bottom:1px solid rgba(0,234,255,0.25); }
+th { background:rgba(0,234,255,0.18); color:var(--cyan); text-shadow:0 0 5px var(--cyan); }
+tr:hover { background:rgba(0,234,255,0.08); }
+a.asn-link { color:var(--cyan); text-decoration:underline; cursor:pointer; }
+
+/* 弹窗 */
+#asnModal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.7); z-index:9999;
+  align-items:center; justify-content:center; padding:20px;
+}
+#asnBox {
+  background:#1a1a2e;
+  border:2px solid var(--cyan);
+  border-radius:12px;
+  width:600px; max-width:95%;
+  max-height:90vh; overflow-y:auto;
+  box-shadow:0 0 20px var(--cyan);
+  color:#fff; position:relative; padding:18px 20px;
+}
+#asnBox h3 { margin:0 0 8px; color:var(--cyan); text-align:center; }
+#asnClose { position:absolute; top:10px; right:16px; font-size:20px; cursor:pointer; color:#fff; }
+#asnContent p { margin:8px 0; }
+
+@media (max-width:640px){
+  #asnBox { width:96%; padding:12px; font-size:14px; }
+  #asnContent p { margin:6px 0; }
+}
