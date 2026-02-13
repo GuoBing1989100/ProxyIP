@@ -3,45 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProxyIP Filter - 智能代理IP筛选器</title>
+    <title>ProxyIP Filter - 高端代理IP筛选器</title>
     <style>
-        :root {
-            --primary-color: #667eea;
-            --primary-dark: #5568d3;
-            --secondary-color: #764ba2;
-            --success-color: #48bb78;
-            --danger-color: #f56565;
-            --warning-color: #ed8936;
-            --bg-gradient-start: #667eea;
-            --bg-gradient-end: #764ba2;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --card-hover: rgba(255, 255, 255, 1);
-            --text-primary: #2d3748;
-            --text-secondary: #718096;
-            --border-color: #e2e8f0;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 30px rgba(0,0,0,0.15);
-            --spacing-xs: 4px;
-            --spacing-sm: 8px;
-            --spacing-md: 16px;
-            --spacing-lg: 24px;
-            --spacing-xl: 32px;
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 16px;
-        }
-
-        [data-theme="dark"] {
-            --bg-gradient-start: #1a1a2e;
-            --bg-gradient-end: #16213e;
-            --card-bg: rgba(31, 41, 55, 0.95);
-            --card-hover: rgba(31, 41, 55, 1);
-            --text-primary: #f7fafc;
-            --text-secondary: #cbd5e0;
-            --border-color: #374151;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -50,392 +13,223 @@
 
         body {
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
-            color: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            line-height: 1.6;
-            transition: all 0.3s ease;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* 动态背景 */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 浮动粒子效果 */
+        .particle {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+
+        /* 导航栏 */
+        .navbar {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: var(--spacing-lg);
+            padding: 0 2rem;
         }
 
-        /* Header */
-        .header {
+        .nav-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--spacing-lg);
-            flex-wrap: wrap;
-            gap: var(--spacing-md);
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            font-size: 28px;
+            font-size: 2rem;
             font-weight: 700;
-            color: white;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            background: linear-gradient(45deg, #fff, #a8edea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .header-actions {
+        .stats {
             display: flex;
-            gap: var(--spacing-sm);
+            gap: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
             align-items: center;
         }
 
-        .theme-toggle, .refresh-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--radius-md);
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-            min-height: 44px;
-        }
-
-        .theme-toggle:hover, .refresh-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
-
-        .last-update {
-            color: rgba(255,255,255,0.9);
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-        }
-
-        /* Statistics Cards */
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: var(--spacing-lg);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
-        }
-
-        .stat-icon {
-            font-size: 32px;
-            margin-bottom: var(--spacing-sm);
-            display: inline-block;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
         }
 
         .stat-label {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: var(--spacing-xs);
-            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
         }
 
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--primary-color);
-            font-feature-settings: 'tnum';
-        }
-
-        /* Filter Section */
-        .filter-section {
-            background: var(--card-bg);
-            padding: var(--spacing-lg);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .filter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--spacing-md);
-        }
-
-        .filter-title {
-            font-size: 20px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-
-        .search-box {
-            margin-bottom: var(--spacing-md);
-        }
-
-        .search-input-wrapper {
-            position: relative;
-            display: flex;
-            gap: var(--spacing-sm);
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 12px 16px 12px 40px;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 15px;
+        /* 玻璃态卡片 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin: 2rem 0;
             transition: all 0.3s ease;
-            background: white;
         }
 
-        [data-theme="dark"] .search-input {
-            background: rgba(255,255,255,0.05);
-            color: var(--text-primary);
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
         }
 
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-size: 18px;
-        }
-
-        .filter-grid {
+        /* 筛选区域 */
+        .filter-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-md);
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
         }
 
         .filter-group {
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-xs);
+            gap: 0.5rem;
         }
 
         .filter-label {
-            font-size: 13px;
             font-weight: 600;
-            color: var(--text-secondary);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
-        .filter-select, .filter-input {
-            padding: 10px 12px;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            transition: all 0.3s ease;
-            background: white;
-            cursor: pointer;
-        }
-
-        [data-theme="dark"] .filter-select,
-        [data-theme="dark"] .filter-input {
-            background: rgba(255,255,255,0.05);
-            color: var(--text-primary);
-        }
-
-        .filter-select:focus,
-        .filter-input:focus {
+        .filter-input, .filter-select {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: #fff;
+            font-size: 1rem;
             outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .advanced-toggle {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            font-weight: 600;
-            cursor: pointer;
-            padding: var(--spacing-sm);
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
             transition: all 0.3s ease;
         }
 
-        .advanced-toggle:hover {
-            opacity: 0.8;
+        .filter-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        .advanced-filters {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
+        .filter-input:focus, .filter-select:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
-        .advanced-filters.active {
-            max-height: 500px;
-            margin-top: var(--spacing-md);
+        .filter-select option {
+            background: #667eea;
+            color: #fff;
         }
 
-        .filter-actions {
+        /* 按钮组 */
+        .button-group {
             display: flex;
-            gap: var(--spacing-sm);
+            gap: 1rem;
+            margin-top: 1.5rem;
             flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: var(--spacing-md);
-            padding-top: var(--spacing-md);
-            border-top: 1px solid var(--border-color);
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 0.75rem 2rem;
             border: none;
-            border-radius: var(--radius-md);
-            font-size: 14px;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: inline-flex;
+            font-size: 1rem;
+            display: flex;
             align-items: center;
-            gap: var(--spacing-xs);
-            min-height: 44px;
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+            gap: 0.5rem;
         }
 
         .btn-secondary {
-            background: var(--border-color);
-            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        .btn-secondary:hover {
-            background: var(--text-secondary);
-            color: white;
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
         }
 
-        .filter-result {
-            color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 600;
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .saved-filters {
-            display: flex;
-            gap: var(--spacing-sm);
-            flex-wrap: wrap;
-            margin-bottom: var(--spacing-md);
-        }
-
-        .saved-filter-tag {
-            background: rgba(102, 126, 234, 0.1);
-            color: var(--primary-color);
-            padding: 6px 12px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .saved-filter-tag:hover {
-            background: rgba(102, 126, 234, 0.2);
-        }
-
-        .saved-filter-tag .remove {
-            cursor: pointer;
-            opacity: 0.6;
-        }
-
-        .saved-filter-tag .remove:hover {
-            opacity: 1;
-        }
-
-        /* Table Section */
-        .table-section {
-            background: var(--card-bg);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-        }
-
-        .table-header {
-            padding: var(--spacing-lg);
-            border-bottom: 2px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: var(--spacing-md);
-        }
-
-        .table-title {
-            font-size: 20px;
+        .btn-copy-all {
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            border: none;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
         }
 
-        .table-actions {
-            display: flex;
-            gap: var(--spacing-sm);
-            flex-wrap: wrap;
+        .btn-copy-all:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
         }
 
+        /* 表格样式 */
         .table-wrapper {
             overflow-x: auto;
-            max-height: 600px;
-            position: relative;
+            border-radius: 16px;
         }
 
         table {
@@ -444,1289 +238,736 @@
         }
 
         thead {
-            position: sticky;
-            top: 0;
-            background: var(--card-bg);
-            z-index: 10;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         th {
-            padding: var(--spacing-md);
+            padding: 1rem;
             text-align: left;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-secondary);
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid var(--border-color);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.9);
             cursor: pointer;
-            user-select: none;
-            white-space: nowrap;
+            transition: all 0.3s ease;
         }
 
         th:hover {
-            background: rgba(102, 126, 234, 0.05);
-        }
-
-        th.sortable::after {
-            content: ' ↕';
-            opacity: 0.3;
-        }
-
-        th.sorted-asc::after {
-            content: ' ↑';
-            opacity: 1;
-            color: var(--primary-color);
-        }
-
-        th.sorted-desc::after {
-            content: ' ↓';
-            opacity: 1;
-            color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.2);
         }
 
         tbody tr {
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.2s ease;
-        }
-
-        tbody tr:nth-child(even) {
-            background: rgba(0,0,0,0.02);
-        }
-
-        [data-theme="dark"] tbody tr:nth-child(even) {
-            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
 
         tbody tr:hover {
-            background: rgba(102, 126, 234, 0.08);
-            transform: scale(1.01);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         td {
-            padding: var(--spacing-md);
-            font-size: 14px;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.9);
         }
 
-        .checkbox-cell {
-            width: 40px;
-            text-align: center;
-        }
-
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            color: #fff;
             cursor: pointer;
-            accent-color: var(--primary-color);
-        }
-
-        .ip-cell {
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .country-cell {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: var(--spacing-xs);
-        }
-
-        .icon-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            padding: 6px 10px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: 16px;
+            font-size: 0.85rem;
             transition: all 0.3s ease;
-            min-width: 36px;
-            min-height: 36px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        .icon-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            transform: scale(1.1);
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
         }
 
-        .icon-btn.copy {
-            color: var(--primary-color);
+        /* 加载动画 */
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
         }
 
-        .icon-btn.favorite {
-            color: var(--warning-color);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .icon-btn.favorite.active {
-            background: var(--warning-color);
-            color: white;
-            border-color: var(--warning-color);
+        /* 旋转动画（刷新按钮） */
+        .rotating {
+            animation: spin 1s linear infinite;
         }
 
-        /* Pagination */
+        /* 分页样式 */
         .pagination {
+            margin-top: 1rem;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-lg);
+            gap: 0.5rem;
             flex-wrap: wrap;
         }
 
-        .page-btn {
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            background: white;
-            border-radius: var(--radius-sm);
+        .pagination button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            color: #fff;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 0.85rem;
             transition: all 0.3s ease;
-            min-width: 36px;
-            min-height: 36px;
+            min-width: 32px;
         }
 
-        [data-theme="dark"] .page-btn {
-            background: rgba(255,255,255,0.05);
+        .pagination button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.35);
         }
 
-        .page-btn:hover:not(:disabled) {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
+        .pagination button.active {
+            background: #f093fb;
+            font-weight: 700;
         }
 
-        .page-btn.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .page-btn:disabled {
-            opacity: 0.3;
+        .pagination button:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
-        /* Loading Skeleton */
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s ease-in-out infinite;
-            border-radius: var(--radius-sm);
-        }
-
-        [data-theme="dark"] .skeleton {
-            background: linear-gradient(90deg, #2d3748 25%, #1a202c 50%, #2d3748 75%);
-            background-size: 200% 100%;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .skeleton-row {
-            display: flex;
-            gap: var(--spacing-md);
-            padding: var(--spacing-md);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .skeleton-cell {
-            height: 20px;
-            flex: 1;
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: var(--spacing-lg);
-            right: var(--spacing-lg);
-            background: white;
-            padding: var(--spacing-md) var(--spacing-lg);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            max-width: 400px;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.success {
-            border-left: 4px solid var(--success-color);
-        }
-
-        .toast.error {
-            border-left: 4px solid var(--danger-color);
-        }
-
-        .toast.warning {
-            border-left: 4px solid var(--warning-color);
-        }
-
-        /* Mobile Card View */
-        .card-view {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .table-wrapper {
-                display: none;
-            }
-
-            .card-view {
-                display: block;
-                padding: var(--spacing-md);
-            }
-
-            .proxy-card {
-                background: white;
-                padding: var(--spacing-md);
-                border-radius: var(--radius-md);
-                margin-bottom: var(--spacing-md);
-                box-shadow: var(--shadow-sm);
-                border-left: 4px solid var(--primary-color);
-            }
-
-            [data-theme="dark"] .proxy-card {
-                background: rgba(255,255,255,0.05);
-            }
-
-            .proxy-card-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: var(--spacing-sm);
-            }
-
-            .proxy-card-ip {
-                font-family: 'Monaco', 'Courier New', monospace;
-                font-weight: 700;
-                color: var(--primary-color);
-                font-size: 16px;
-            }
-
-            .proxy-card-body {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: var(--spacing-sm);
-                margin-bottom: var(--spacing-sm);
-                font-size: 13px;
-            }
-
-            .proxy-card-label {
-                color: var(--text-secondary);
-                font-weight: 600;
-            }
-
-            .proxy-card-actions {
-                display: flex;
-                gap: var(--spacing-sm);
-                justify-content: flex-end;
-            }
-
-            .filter-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Footer */
-        .footer {
+        .pagination-info {
+            margin-top: 0.5rem;
             text-align: center;
-            padding: var(--spacing-xl) var(--spacing-lg);
-            color: rgba(255,255,255,0.8);
-            font-size: 14px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
         }
 
-        .footer a {
-            color: white;
-            text-decoration: underline;
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .filter-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* 标签样式 */
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
             font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        .footer a:hover {
-            opacity: 0.8;
+        .tag-country {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
         }
 
-        /* Dropdown Menu */
-        .dropdown {
+        /* 工具提示 */
+        .tooltip {
             position: relative;
             display: inline-block;
         }
 
-        .dropdown-content {
-            display: none;
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
             position: absolute;
-            right: 0;
-            background: white;
-            min-width: 160px;
-            box-shadow: var(--shadow-lg);
-            border-radius: var(--radius-md);
-            z-index: 100;
-            overflow: hidden;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            white-space: nowrap;
         }
 
-        [data-theme="dark"] .dropdown-content {
-            background: var(--card-bg);
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
 
-        .dropdown.active .dropdown-content {
-            display: block;
+        /* Toast 提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .dropdown-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            font-size: 14px;
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.2s ease;
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
-        .dropdown-item:last-child {
-            border-bottom: none;
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
         }
 
-        .dropdown-item:hover {
-            background: rgba(102, 126, 234, 0.1);
+        .footer a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
-        /* Utility Classes */
-        .text-success { color: var(--success-color); }
-        .text-danger { color: var(--danger-color); }
-        .text-warning { color: var(--warning-color); }
-        .hidden { display: none; }
-
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        .footer a:hover {
+            color: #f093fb;
         }
 
-        ::-webkit-scrollbar-track {
-            background: var(--border-color);
-            border-radius: 4px;
+        /* 更新时间显示 */
+        .update-time {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 0.5rem;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 4px;
+        /* 当前筛选信息 */
+        .current-filter {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
+        .current-filter strong {
+            color: #f093fb;
         }
     </style>
+    <!-- 引入国家映射文件 -->
+    <script src="countryMap.js"></script>
 </head>
 <body>
+    <div class="bg-animation"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    🚀 ProxyIP Filter
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">总代理数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="countryCount">0</div>
+                        <div class="stat-label">国家数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="filteredCount">0</div>
+                        <div class="stat-label">筛选结果</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo">
-                <span>🚀</span>
-                <span>ProxyIP Filter</span>
+        <!-- 筛选面板 -->
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem;">🔍 智能筛选</h2>
+                <div class="update-time" id="updateTime">数据加载中...</div>
             </div>
-            <div class="header-actions">
-                <div class="last-update">
-                    <span>⏰</span>
-                    <span id="lastUpdate">加载中...</span>
-                </div>
-                <button class="theme-toggle" onclick="toggleTheme()">
-                    <span id="themeIcon">🌙</span>
-                    <span id="themeText">暗黑模式</span>
-                </button>
-                <button class="refresh-btn" onclick="refreshData()">
-                    <span>🔄</span>
-                    <span>刷新数据</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-label">总代理数</div>
-                <div class="stat-value" id="totalProxies">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🌍</div>
-                <div class="stat-label">国家数量</div>
-                <div class="stat-value" id="totalCountries">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-label">筛选结果</div>
-                <div class="stat-value" id="filteredCount">0</div>
-            </div>
-        </div>
-
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <div class="filter-header">
-                <div class="filter-title">
-                    <span>🔍</span>
-                    <span>智能筛选</span>
-                </div>
-                <button class="btn btn-secondary" onclick="saveCurrentFilter()">
-                    💾 保存筛选
-                </button>
-            </div>
-
-            <!-- Saved Filters -->
-            <div class="saved-filters" id="savedFilters"></div>
-
-            <!-- Search Box -->
-            <div class="search-box">
-                <div class="search-input-wrapper">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" 
-                           class="search-input" 
-                           id="searchInput" 
-                           placeholder="搜索 IP、国家、ISP..."
-                           oninput="handleSearch()">
-                </div>
-            </div>
-
-            <!-- Basic Filters -->
-            <div class="filter-grid">
+            <div class="filter-section">
                 <div class="filter-group">
                     <label class="filter-label">🌍 国家/地区</label>
-                    <select class="filter-select" id="countryFilter" onchange="applyFilters()">
+                    <select class="filter-select" id="countryFilter">
                         <option value="">全部国家</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label class="filter-label">🔌 端口</label>
-                    <input type="text" class="filter-input" id="portFilter" placeholder="输入端口..." oninput="handleSearch()">
+                    <input type="text" class="filter-input" id="portFilter" placeholder="输入端口号...">
                 </div>
                 <div class="filter-group">
                     <label class="filter-label">🏢 ISP/公司</label>
-                    <input type="text" class="filter-input" id="ispFilter" placeholder="输入ISP..." oninput="handleSearch()">
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">⭐ 收藏</label>
-                    <select class="filter-select" id="favoriteFilter" onchange="applyFilters()">
-                        <option value="">全部</option>
-                        <option value="favorites">仅收藏</option>
-                    </select>
+                    <input type="text" class="filter-input" id="companyFilter" placeholder="搜索公司名称...">
                 </div>
             </div>
-
-            <!-- Filter Actions -->
-            <div class="filter-actions">
-                <div style="display: flex; gap: var(--spacing-sm);">
-                    <button class="btn btn-secondary" onclick="resetFilters()">
-                        🔄 重置筛选
-                    </button>
-                    <button class="btn btn-primary" onclick="applyFilters()">
-                        ✨ 应用筛选
-                    </button>
-                </div>
-                <div class="filter-result">
-                    <span>当前显示: </span>
-                    <span id="currentCount">0</span>
-                    <span> / </span>
-                    <span id="totalCount">0</span>
-                    <span> 条代理</span>
-                </div>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="resetFilters()">🔄 重置筛选</button>
+                <button class="btn btn-secondary" id="refreshBtn" onclick="refreshData()">
+                    <span id="refreshIcon">🔃</span> 刷新数据
+                </button>
             </div>
         </div>
 
-        <!-- Table Section -->
-        <div class="table-section">
-            <div class="table-header">
-                <div class="table-title">
-                    <span>📋</span>
-                    <span>代理列表</span>
-                </div>
-                <div class="table-actions">
-                    <div class="dropdown">
-                        <button class="btn btn-secondary" onclick="toggleDropdown('batchDropdown')">
-                            ☑️ 批量操作 ▼
-                        </button>
-                        <div class="dropdown-content" id="batchDropdown">
-                            <div class="dropdown-item" onclick="selectAll()">全选</div>
-                            <div class="dropdown-item" onclick="deselectAll()">取消全选</div>
-                            <div class="dropdown-item" onclick="copySelected()">复制选中</div>
-                            <div class="dropdown-item" onclick="exportSelected()">导出选中</div>
-                        </div>
-                    </div>
-                    <div class="dropdown">
-                        <button class="btn btn-secondary" onclick="toggleDropdown('exportDropdown')">
-                            📥 导出 ▼
-                        </button>
-                        <div class="dropdown-content" id="exportDropdown">
-                            <div class="dropdown-item" onclick="exportData('txt')">导出为 TXT</div>
-                            <div class="dropdown-item" onclick="exportData('csv')">导出为 CSV</div>
-                            <div class="dropdown-item" onclick="exportData('json')">导出为 JSON</div>
-                        </div>
-                    </div>
-                </div>
+        <!-- 数据表格 -->
+        <div class="glass-card">
+            <!-- 当前筛选信息 -->
+            <div id="currentFilterInfo" class="current-filter" style="display: none;">
+                当前筛选: <strong id="currentCountry"></strong> 共 <strong id="currentCount">0</strong> 条代理
             </div>
-
-            <!-- Desktop Table View -->
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="font-size: 1.5rem; margin: 0;">📊 代理列表</h2>
+                <button class="btn btn-copy-all" id="copyAllBtn" onclick="copyAllProxies()" style="display: none;">
+                    📋 全部复制当前国家
+                </button>
+            </div>
+            
             <div class="table-wrapper">
-                <table>
+                <table id="proxyTable">
                     <thead>
                         <tr>
-                            <th class="checkbox-cell">
-                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
-                            </th>
-                            <th class="sortable" onclick="sortTable('ip')">IP地址</th>
-                            <th class="sortable" onclick="sortTable('port')">端口</th>
-                            <th class="sortable" onclick="sortTable('country')">国家</th>
-                            <th class="sortable" onclick="sortTable('isp')">ISP/公司</th>
+                            <th onclick="sortTable(0)">IP地址 ↕</th>
+                            <th onclick="sortTable(1)">端口 ↕</th>
+                            <th onclick="sortTable(2)">国家 ↕</th>
+                            <th onclick="sortTable(3)">ISP/公司 ↕</th>
                             <th>操作</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <!-- Loading skeleton -->
-                        <tr class="skeleton-row">
-                            <td><div class="skeleton skeleton-cell"></div></td>
-                            <td><div class="skeleton skeleton-cell"></div></td>
-                            <td><div class="skeleton skeleton-cell"></div></td>
-                            <td><div class="skeleton skeleton-cell"></div></td>
-                            <td><div class="skeleton skeleton-cell"></div></td>
-                            <td><div class="skeleton skeleton-cell"></div></td>
+                        <tr>
+                            <td colspan="5" style="text-align: center;">
+                                <div class="loader"></div>
+                                <p>正在加载数据...</p>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-
-            <!-- Mobile Card View -->
-            <div class="card-view" id="cardView">
-                <!-- Cards will be generated here -->
-            </div>
-
-            <!-- Pagination -->
-            <div class="pagination" id="pagination"></div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>数据来源: <a href="https://github.com/GuoBing1989100/ProxyIP" target="_blank">GuoBing1989100/ProxyIP</a></p>
-            <p>支持离线使用 | Made with ❤️</p>
+            <!-- 分页区域 -->
+            <div id="pagination" class="pagination"></div>
+            <div id="paginationInfo" class="pagination-info"></div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast">
-        <span id="toastIcon"></span>
-        <span id="toastMessage"></span>
+    <!-- 页脚 -->
+    <div class="footer">
+        <p>数据来源: <a href="https://xy.148668.xyz/" target="_blank">Kudog xy提供</a></p>
+        <p>每日自动更新 | Made with ❤️</p>
     </div>
 
     <script>
-// 国家代码中文映射
-const countryNames = {
-    'AD': '安道尔', 'AE': '阿联酋', 'AF': '阿富汗', 'AG': '安提瓜和巴布达',
-    'AI': '安圭拉', 'AL': '阿尔巴尼亚', 'AM': '亚美尼亚', 'AO': '安哥拉',
-    'AQ': '南极洲', 'AR': '阿根廷', 'AS': '美属萨摩亚', 'AT': '奥地利',
-    'AU': '澳大利亚', 'AW': '阿鲁巴', 'AX': '奥兰群岛', 'AZ': '阿塞拜疆',
-    'BA': '波黑', 'BB': '巴巴多斯', 'BD': '孟加拉国', 'BE': '比利时',
-    'BF': '布基纳法索', 'BG': '保加利亚', 'BH': '巴林', 'BI': '布隆迪',
-    'BJ': '贝宁', 'BL': '圣巴泰勒米', 'BM': '百慕大', 'BN': '文莱',
-    'BO': '玻利维亚', 'BQ': '荷兰加勒比', 'BR': '巴西', 'BS': '巴哈马',
-    'BT': '不丹', 'BV': '布韦岛', 'BW': '博茨瓦纳', 'BY': '白俄罗斯',
-    'BZ': '伯利兹', 'CA': '加拿大', 'CC': '科科斯群岛', 'CD': '刚果(金)',
-    'CF': '中非', 'CG': '刚果(布)', 'CH': '瑞士', 'CI': '科特迪瓦',
-    'CK': '库克群岛', 'CL': '智利', 'CM': '喀麦隆', 'CN': '中国',
-    'CO': '哥伦比亚', 'CR': '哥斯达黎加', 'CU': '古巴', 'CV': '佛得角',
-    'CW': '库拉索', 'CX': '圣诞岛', 'CY': '塞浦路斯', 'CZ': '捷克',
-    'DE': '德国', 'DJ': '吉布提', 'DK': '丹麦', 'DM': '多米尼克',
-    'DO': '多米尼加', 'DZ': '阿尔及利亚', 'EC': '厄瓜多尔', 'EE': '爱沙尼亚',
-    'EG': '埃及', 'EH': '西撒哈拉', 'ER': '厄立特里亚', 'ES': '西班牙',
-    'ET': '埃塞俄比亚', 'FI': '芬兰', 'FJ': '斐济', 'FK': '福克兰群岛',
-    'FM': '密克罗尼西亚', 'FO': '法罗群岛', 'FR': '法国', 'GA': '加蓬',
-    'GB': '英国', 'GD': '格林纳达', 'GE': '格鲁吉亚', 'GF': '法属圭亚那',
-    'GG': '根西岛', 'GH': '加纳', 'GI': '直布罗陀', 'GL': '格陵兰',
-    'GM': '冈比亚', 'GN': '几内亚', 'GP': '瓜德罗普', 'GQ': '赤道几内亚',
-    'GR': '希腊', 'GS': '南乔治亚', 'GT': '危地马拉', 'GU': '关岛',
-    'GW': '几内亚比绍', 'GY': '圭亚那', 'HK': '中国香港', 'HM': '赫德岛',
-    'HN': '洪都拉斯', 'HR': '克罗地亚', 'HT': '海地', 'HU': '匈牙利',
-    'ID': '印度尼西亚', 'IE': '爱尔兰', 'IL': '以色列', 'IM': '马恩岛',
-    'IN': '印度', 'IO': '英属印度洋领地', 'IQ': '伊拉克', 'IR': '伊朗',
-    'IS': '冰岛', 'IT': '意大利', 'JE': '泽西岛', 'JM': '牙买加',
-    'JO': '约旦', 'JP': '日本', 'KE': '肯尼亚', 'KG': '吉尔吉斯斯坦',
-    'KH': '柬埔寨', 'KI': '基里巴斯', 'KM': '科摩罗', 'KN': '圣基茨和尼维斯',
-    'KP': '朝鲜', 'KR': '韩国', 'KW': '科威特', 'KY': '开曼群岛',
-    'KZ': '哈萨克斯坦', 'LA': '老挝', 'LB': '黎巴嫩', 'LC': '圣卢西亚',
-    'LI': '列支敦士登', 'LK': '斯里兰卡', 'LR': '利比里亚', 'LS': '莱索托',
-    'LT': '立陶宛', 'LU': '卢森堡', 'LV': '拉脱维亚', 'LY': '利比亚',
-    'MA': '摩洛哥', 'MC': '摩纳哥', 'MD': '摩尔多瓦', 'ME': '黑山',
-    'MF': '法属圣马丁', 'MG': '马达加斯加', 'MH': '马绍尔群岛', 'MK': '北马其顿',
-    'ML': '马里', 'MM': '缅甸', 'MN': '蒙古', 'MO': '中国澳门',
-    'MP': '北马里亚纳群岛', 'MQ': '马提尼克', 'MR': '毛里塔尼亚', 'MS': '蒙特塞拉特',
-    'MT': '马耳他', 'MU': '毛里求斯', 'MV': '马尔代夫', 'MW': '马拉维',
-    'MX': '墨西哥', 'MY': '马来西亚', 'MZ': '莫桑比克', 'NA': '纳米比亚',
-    'NC': '新喀里多尼亚', 'NE': '尼日尔', 'NF': '诺福克岛', 'NG': '尼日利亚',
-    'NI': '尼加拉瓜', 'NL': '荷兰', 'NO': '挪威', 'NP': '尼泊尔',
-    'NR': '瑙鲁', 'NU': '纽埃', 'NZ': '新西兰', 'OM': '阿曼',
-    'PA': '巴拿马', 'PE': '秘鲁', 'PF': '法属波利尼西亚', 'PG': '巴布亚新几内亚',
-    'PH': '菲律宾', 'PK': '巴基斯坦', 'PL': '波兰', 'PM': '圣皮埃尔和密克隆',
-    'PN': '皮特凯恩群岛', 'PR': '波多黎各', 'PS': '巴勒斯坦', 'PT': '葡萄牙',
-    'PW': '帕劳', 'PY': '巴拉圭', 'QA': '卡塔尔', 'RE': '留尼汪',
-    'RO': '罗马尼亚', 'RS': '塞尔维亚', 'RU': '俄罗斯', 'RW': '卢旺达',
-    'SA': '沙特阿拉伯', 'SB': '所罗门群岛', 'SC': '塞舌尔', 'SD': '苏丹',
-    'SE': '瑞典', 'SG': '新加坡', 'SH': '圣赫勒拿', 'SI': '斯洛文尼亚',
-    'SJ': '斯瓦尔巴', 'SK': '斯洛伐克', 'SL': '塞拉利昂', 'SM': '圣马力诺',
-    'SN': '塞内加尔', 'SO': '索马里', 'SR': '苏里南', 'SS': '南苏丹',
-    'ST': '圣多美和普林西比', 'SV': '萨尔瓦多', 'SX': '荷属圣马丁', 'SY': '叙利亚',
-    'SZ': '斯威士兰', 'TC': '特克斯和凯科斯', 'TD': '乍得', 'TF': '法属南部领地',
-    'TG': '多哥', 'TH': '泰国', 'TJ': '塔吉克斯坦', 'TK': '托克劳',
-    'TL': '东帝汶', 'TM': '土库曼斯坦', 'TN': '突尼斯', 'TO': '汤加',
-    'TR': '土耳其', 'TT': '特立尼达和多巴哥', 'TV': '图瓦卢', 'TW': '中国台湾',
-    'TZ': '坦桑尼亚', 'UA': '乌克兰', 'UG': '乌干达', 'UM': '美国本土外小岛屿',
-    'US': '美国', 'UY': '乌拉圭', 'UZ': '乌兹别克斯坦', 'VA': '梵蒂冈',
-    'VC': '圣文森特和格林纳丁斯', 'VE': '委内瑞拉', 'VG': '英属维尔京群岛', 'VI': '美属维尔京群岛',
-    'VN': '越南', 'VU': '瓦努阿图', 'WF': '瓦利斯和富图纳', 'WS': '萨摩亚',
-    'YE': '也门', 'YT': '马约特', 'ZA': '南非', 'ZM': '赞比亚', 'ZW': '津巴布韦'
-};
-
-        // Global State
-        let allProxies = [];
-        let filteredProxies = [];
-        let currentPage = 1;
-        let itemsPerPage = 20;
-        let sortColumn = '';
-        let sortDirection = 'asc';
-        let searchTimeout = null;
-        let favorites = new Set(JSON.parse(localStorage.getItem('favorites') || '[]'));
-        let savedFiltersList = JSON.parse(localStorage.getItem('savedFilters') || '[]'));
+        let allData = [];
+        let filteredData = [];
         let lastUpdateTime = null;
+        let currentCountryFilter = '';
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadTheme();
-            loadSavedFilters();
-            fetchProxyData();
-        });
+        // 分页相关
+        let currentPage = 1;
+        const pageSize = 50;
 
-        // Fetch Proxy Data (使用原始逻辑)
-        async function fetchProxyData() {
-            try {
-                const timestamp = new Date().getTime();
-                const dataSources = [
-                    `alive.txt?t=${timestamp}`,
-                    `../alive.txt?t=${timestamp}`,
-                    `../data/alive.txt?t=${timestamp}`,
-                    `https://raw.githubusercontent.com/GuoBing1989100/ProxyIP/main/Data/alive.txt?t=${timestamp}`
-                ];
-
-                let text = '';
-                let success = false;
-
-                for (const source of dataSources) {
-                    try {
-                        console.log(`尝试加载: ${source}`);
-                        const response = await fetch(source);
-                        if (response.ok) {
-                            text = await response.text();
-                            if (text.trim() && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
-                                success = true;
-                                console.log(`成功加载: ${source}`);
-                                break;
-                            }
-                        }
-                    } catch (e) {
-                        console.log(`加载失败: ${source}`);
-                    }
-                }
-
-                if (!success || !text.trim()) {
-                    throw new Error('无法加载 alive.txt');
-                }
-
-                // 解析数据（保留原始逻辑）
-                const lines = text.trim().split('\n').filter(line => line.trim());
-                allProxies = lines.map((line, index) => {
-                    const parts = line.split(',');
-                    if (parts.length < 3) return null;
-
-                    const ip = parts[0].trim();
-                    const port = parts[1].trim();
-                    const countryCode = parts[2].trim().toUpperCase();
-
-                    // 使用 countryMap 获取国家名称
-                    const countryName = countryNames[countryCode] || countryCode;
-                    const company = parts.length > 3 ? parts.slice(3).join(',').trim() : 'Unknown';
-
-                    return {
-                        id: index,
-                        ip: ip,
-                        port: port,
-                        countryCode: countryCode,
-                        country: countryName,
-                        isp: company,
-                        selected: false
-                    };
-                }).filter(Boolean);
-
-                filteredProxies = [...allProxies];
-                currentPage = 1;
-                lastUpdateTime = new Date();
-
-                updateStatistics();
-                populateFilters();
-                renderTable();
-                updateLastUpdate();
-                showToast(`成功加载 ${allProxies.length} 个代理`, 'success');
-            } catch (error) {
-                console.error('数据加载错误:', error);
-                showToast('数据加载失败，请检查网络或刷新页面', 'error');
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 3rem; color: #f56565;"><b>❌ 数据加载失败</b><br><br>请检查网络连接或点击右上角"刷新数据"按钮重试</td></tr>';
+        // 创建浮动粒子
+        function createParticles() {
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                document.body.appendChild(particle);
             }
         }
 
-        // Update Statistics
-        function updateStatistics() {
-            const countries = new Set(allProxies.map(p => p.country));
-
-            animateValue('totalProxies', 0, allProxies.length, 1000);
-            animateValue('totalCountries', 0, countries.size, 1000);
-            animateValue('filteredCount', 0, filteredProxies.length, 1000);
-
-            document.getElementById('currentCount').textContent = filteredProxies.length;
-            document.getElementById('totalCount').textContent = allProxies.length;
+        // 显示Toast提示
+        function showToast(message, duration = 3000) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), duration);
         }
 
-        // Animate Number
-        function animateValue(id, start, end, duration) {
-            const element = document.getElementById(id);
-            const range = end - start;
-            const increment = range / (duration / 16);
-            let current = start;
-
-            const timer = setInterval(() => {
-                current += increment;
-                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
-                    current = end;
-                    clearInterval(timer);
-                }
-                element.textContent = Math.floor(current);
-            }, 16);
+        // 更新时间显示
+        function updateTimeDisplay() {
+            if (lastUpdateTime) {
+                const timeStr = lastUpdateTime.toLocaleString('zh-CN', {
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+                document.getElementById('updateTime').textContent = `最后更新: ${timeStr}`;
+            }
         }
 
-        // Populate Filters
-        function populateFilters() {
-            const countries = [...new Set(allProxies.map(p => p.country))].sort();
-            populateSelect('countryFilter', countries);
-        }
+        // 复制所有当前国家代理
+        function copyAllProxies() {
+            if (filteredData.length === 0 || !currentCountryFilter) {
+                showToast('❌ 没有可复制的数据');
+                return;
+            }
 
-        function populateSelect(id, options) {
-            const select = document.getElementById(id);
-            const currentValue = select.value;
-            select.innerHTML = `<option value="">全部${id.includes('country') ? '国家' : 'ISP'}</option>`;
-            options.forEach(opt => {
-                select.innerHTML += `<option value="${opt}">${opt}</option>`;
+            const proxyList = filteredData.map(item => `${item.ip}:${item.port}`).join('\n');
+            navigator.clipboard.writeText(proxyList).then(() => {
+                showToast(`✅ 已复制 ${filteredData.length} 条 ${currentCountryFilter} 代理到剪贴板！`);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                showToast('❌ 复制失败，请重试');
             });
-            select.value = currentValue;
         }
 
-        // Search Handler with Debounce
-        function handleSearch() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                applyFilters();
-            }, 300);
+        // 更新复制按钮和筛选信息显示
+        function updateCopyButton() {
+            const copyBtn = document.getElementById('copyAllBtn');
+            const filterInfo = document.getElementById('currentFilterInfo');
+            const currentCountryEl = document.getElementById('currentCountry');
+            const currentCountEl = document.getElementById('currentCount');
+
+            if (currentCountryFilter && filteredData.length > 0) {
+                copyBtn.style.display = 'flex';
+                filterInfo.style.display = 'block';
+                currentCountryEl.textContent = currentCountryFilter;
+                currentCountEl.textContent = filteredData.length.toLocaleString();
+            } else {
+                copyBtn.style.display = 'none';
+                filterInfo.style.display = 'none';
+            }
         }
 
-        // Apply Filters
+        // 加载数据
+        async function loadData() {
+            try {
+                console.log('🔄 开始加载数据...');
+                const timestamp = new Date().getTime();
+                
+                const response = await fetch(`alive.txt?t=${timestamp}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const text = await response.text();
+                
+                if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                    throw new Error('读取到了HTML文件，而不是数据文件！');
+                }
+                
+                console.log('📄 数据长度:', text.length, '字符');
+                
+                const lines = text.trim().split('\n');
+                console.log('📊 总行数:', lines.length);
+                
+                allData = lines
+                    .filter(line => line.trim())
+                    .map((line, index) => {
+                        const parts = line.split(',');
+                        
+                        if (parts.length < 3) {
+                            console.warn(`⚠️ 第${index + 1}行数据不完整:`, line);
+                            return null;
+                        }
+                        
+                        const ip = parts[0].trim();
+                        const port = parts[1].trim();
+                        const countryCode = parts[2].trim();
+                        const company = parts.length > 3 ? parts.slice(3).join(',').trim() : 'Unknown';
+                        
+                        const country = countryNames[countryCode] || countryCode;
+                        
+                        return { ip, port, countryCode, country, company };
+                    })
+                    .filter(item => item !== null);
+                
+                console.log('✅ 成功解析', allData.length, '条数据');
+                
+                filteredData = [...allData];
+                currentPage = 1;
+                currentCountryFilter = '';
+                lastUpdateTime = new Date();
+                updateStats();
+                populateCountryFilter();
+                renderTable();
+                renderPagination();
+                updateCopyButton();
+                updateTimeDisplay();
+                
+            } catch (error) {
+                console.error('❌ 加载失败:', error);
+                document.getElementById('tableBody').innerHTML = 
+                    `<tr><td colspan="5" style="text-align: center; color: #ff6b6b;">
+                        <strong>❌ 数据加载失败: ${error.message}</strong><br><br>
+                        <small>请确认 alive.txt 文件在 Data 文件夹内</small><br>
+                        <small>按 F12 查看控制台详细信息</small>
+                    </td></tr>`;
+                showToast('❌ 数据加载失败');
+            }
+        }
+
+        // 刷新数据
+        async function refreshData() {
+            const btn = document.getElementById('refreshBtn');
+            const icon = document.getElementById('refreshIcon');
+            
+            if (btn.disabled) return;
+            
+            btn.disabled = true;
+            icon.classList.add('rotating');
+            
+            try {
+                await loadData();
+                showToast('✅ 数据刷新成功！');
+            } catch (error) {
+                showToast('❌ 刷新失败');
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    icon.classList.remove('rotating');
+                }, 1000);
+            }
+        }
+
+        // 更新统计
+        function updateStats() {
+            document.getElementById('totalCount').textContent = allData.length.toLocaleString();
+            const countries = new Set(allData.map(item => item.country));
+            document.getElementById('countryCount').textContent = countries.size;
+            document.getElementById('filteredCount').textContent = filteredData.length.toLocaleString();
+        }
+
+        // 填充国家筛选器
+        function populateCountryFilter() {
+            const countries = [...new Set(allData.map(item => item.country))].sort();
+            const select = document.getElementById('countryFilter');
+            select.innerHTML = '<option value="">全部国家</option>';
+            
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                select.appendChild(option);
+            });
+        }
+
+        // 应用筛选
         function applyFilters() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const country = document.getElementById('countryFilter').value;
             const port = document.getElementById('portFilter').value.trim();
-            const isp = document.getElementById('ispFilter').value.trim().toLowerCase();
-            const favoriteFilter = document.getElementById('favoriteFilter').value;
+            const company = document.getElementById('companyFilter').value.trim().toLowerCase();
 
-            filteredProxies = allProxies.filter(proxy => {
-                const matchSearch = !searchTerm || 
-                    proxy.ip.toLowerCase().includes(searchTerm) ||
-                    proxy.country.toLowerCase().includes(searchTerm) ||
-                    proxy.isp.toLowerCase().includes(searchTerm);
+            currentCountryFilter = country;
 
-                const matchCountry = !country || proxy.country === country;
-                const matchPort = !port || proxy.port.includes(port);
-                const matchISP = !isp || proxy.isp.toLowerCase().includes(isp);
-                const matchFavorite = !favoriteFilter || (favoriteFilter === 'favorites' && favorites.has(proxy.id));
-
-                return matchSearch && matchCountry && matchPort && matchISP && matchFavorite;
+            filteredData = allData.filter(item => {
+                return (!country || item.country === country) &&
+                       (!port || item.port.includes(port)) &&
+                       (!company || item.company.toLowerCase().includes(company));
             });
 
             currentPage = 1;
-            updateStatistics();
+            updateStats();
             renderTable();
+            renderPagination();
+            updateCopyButton();
         }
 
-        // Reset Filters
+        // 重置筛选
         function resetFilters() {
-            document.getElementById('searchInput').value = '';
             document.getElementById('countryFilter').value = '';
             document.getElementById('portFilter').value = '';
-            document.getElementById('ispFilter').value = '';
-            document.getElementById('favoriteFilter').value = '';
-            filteredProxies = [...allProxies];
+            document.getElementById('companyFilter').value = '';
+            filteredData = [...allData];
             currentPage = 1;
-            updateStatistics();
+            currentCountryFilter = '';
+            updateStats();
             renderTable();
+            renderPagination();
+            updateCopyButton();
+            showToast('🔄 筛选已重置');
         }
 
-        // Sort Table
-        function sortTable(column) {
-            if (sortColumn === column) {
-                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                sortColumn = column;
-                sortDirection = 'asc';
-            }
-
-            filteredProxies.sort((a, b) => {
-                let aVal = a[column];
-                let bVal = b[column];
-
-                if (column === 'port') {
-                    aVal = parseInt(a.port);
-                    bVal = parseInt(b.port);
-                }
-
-                if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-                if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            // Update header classes
-            document.querySelectorAll('th.sortable').forEach(th => {
-                th.classList.remove('sorted-asc', 'sorted-desc');
-            });
-            event.target.classList.add(`sorted-${sortDirection}`);
-
-            renderTable();
-        }
-
-        // Render Table
+        // 渲染表格（带分页）
         function renderTable() {
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-            const pageProxies = filteredProxies.slice(start, end);
-
-            // Render desktop table
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-
-            if (pageProxies.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">暂无数据</td></tr>';
-            } else {
-                pageProxies.forEach(proxy => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="checkbox-cell">
-                            <input type="checkbox" ${proxy.selected ? 'checked' : ''} onchange="toggleProxySelection(${proxy.id})">
-                        </td>
-                        <td class="ip-cell">${proxy.ip}</td>
-                        <td>${proxy.port}</td>
-                        <td>${proxy.country}</td>
-                        <td>${proxy.isp}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="icon-btn copy" onclick="copyProxy(${proxy.id})" title="复制">📋</button>
-                                <button class="icon-btn favorite ${favorites.has(proxy.id) ? 'active' : ''}" onclick="toggleFavorite(${proxy.id})" title="收藏">⭐</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
+            
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">没有找到匹配的数据</td></tr>';
+                document.getElementById('pagination').innerHTML = '';
+                document.getElementById('paginationInfo').textContent = '';
+                return;
             }
 
-            // Render mobile cards
-            const cardView = document.getElementById('cardView');
-            cardView.innerHTML = '';
-            pageProxies.forEach(proxy => {
-                const card = document.createElement('div');
-                card.className = 'proxy-card';
-                card.innerHTML = `
-                    <div class="proxy-card-header">
-                        <div class="proxy-card-ip">${proxy.ip}:${proxy.port}</div>
-                        <input type="checkbox" ${proxy.selected ? 'checked' : ''} onchange="toggleProxySelection(${proxy.id})">
-                    </div>
-                    <div class="proxy-card-body">
-                        <div><span class="proxy-card-label">国家:</span> ${proxy.country}</div>
-                        <div><span class="proxy-card-label">ISP:</span> ${proxy.isp}</div>
-                    </div>
-                    <div class="proxy-card-actions">
-                        <button class="icon-btn copy" onclick="copyProxy(${proxy.id})">📋</button>
-                        <button class="icon-btn favorite ${favorites.has(proxy.id) ? 'active' : ''}" onclick="toggleFavorite(${proxy.id})">⭐</button>
-                    </div>
-                `;
-                cardView.appendChild(card);
-            });
+            const total = filteredData.length;
+            const totalPages = Math.max(1, Math.ceil(total / pageSize));
+            if (currentPage > totalPages) currentPage = totalPages;
 
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, total);
+            const displayData = filteredData.slice(startIndex, endIndex);
+
+            const rows = displayData.map(item => {
+                const safeIP = item.ip.replace(/'/g, "\\'");
+                const safePort = item.port.replace(/'/g, "\\'");
+                
+                return `
+                    <tr>
+                        <td>${item.ip}</td>
+                        <td>${item.port}</td>
+                        <td><span class="tag tag-country">${item.country}</span></td>
+                        <td>${item.company}</td>
+                        <td>
+                            <button class="copy-btn tooltip" onclick="copyToClipboard('${safeIP}:${safePort}')">
+                                📋 复制
+                                <span class="tooltiptext">复制到剪贴板</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows;
+
+            const info = `第 ${currentPage} / ${totalPages} 页，每页 ${pageSize} 条，共 ${total} 条`;
+            document.getElementById('paginationInfo').textContent = info;
+        }
+
+        // 渲染分页控件
+        function renderPagination() {
+            const container = document.getElementById('pagination');
+            container.innerHTML = '';
+
+            if (filteredData.length === 0) return;
+
+            const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
+
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '«';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                    renderPagination();
+                }
+            };
+            container.appendChild(prevBtn);
+
+            const maxButtons = 7;
+            let start = Math.max(1, currentPage - 3);
+            let end = Math.min(totalPages, start + maxButtons - 1);
+            if (end - start + 1 < maxButtons) {
+                start = Math.max(1, end - maxButtons + 1);
+            }
+
+            for (let i = start; i <= end; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                if (i === currentPage) {
+                    btn.classList.add('active');
+                }
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderTable();
+                    renderPagination();
+                };
+                container.appendChild(btn);
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = '»';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                    renderPagination();
+                }
+            };
+            container.appendChild(nextBtn);
+        }
+
+        // 复制到剪贴板
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ 已复制: ' + text);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                showToast('❌ 复制失败');
+            });
+        }
+
+        // 表格排序
+        let sortDirection = {};
+        function sortTable(columnIndex) {
+            const key = ['ip', 'port', 'country', 'company'][columnIndex];
+            sortDirection[key] = !sortDirection[key];
+            
+            filteredData.sort((a, b) => {
+                let aVal = a[key];
+                let bVal = b[key];
+                
+                if (key === 'port') {
+                    aVal = parseInt(aVal);
+                    bVal = parseInt(bVal);
+                }
+                
+                if (aVal === bVal) return 0;
+                if (sortDirection[key]) {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+            
+            currentPage = 1;
+            renderTable();
             renderPagination();
         }
 
-        // Render Pagination
-        function renderPagination() {
-            const totalPages = Math.ceil(filteredProxies.length / itemsPerPage);
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
+        // 初始化
+        createParticles();
+        loadData();
 
-            if (totalPages <= 1) return;
+        // 实时筛选
+        ['countryFilter', 'portFilter', 'companyFilter'].forEach(id => {
+            document.getElementById(id).addEventListener('input', applyFilters);
+        });
 
-            // Previous button
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'page-btn';
-            prevBtn.textContent = '← 上一页';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => changePage(currentPage - 1);
-            pagination.appendChild(prevBtn);
-
-            // Page numbers
-            const maxButtons = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-
-            if (endPage - startPage < maxButtons - 1) {
-                startPage = Math.max(1, endPage - maxButtons + 1);
-            }
-
-            if (startPage > 1) {
-                const firstBtn = document.createElement('button');
-                firstBtn.className = 'page-btn';
-                firstBtn.textContent = '1';
-                firstBtn.onclick = () => changePage(1);
-                pagination.appendChild(firstBtn);
-
-                if (startPage > 2) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.textContent = '...';
-                    ellipsis.style.padding = '0 8px';
-                    pagination.appendChild(ellipsis);
-                }
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'page-btn';
-                if (i === currentPage) btn.classList.add('active');
-                btn.textContent = i;
-                btn.onclick = () => changePage(i);
-                pagination.appendChild(btn);
-            }
-
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.textContent = '...';
-                    ellipsis.style.padding = '0 8px';
-                    pagination.appendChild(ellipsis);
-                }
-
-                const lastBtn = document.createElement('button');
-                lastBtn.className = 'page-btn';
-                lastBtn.textContent = totalPages;
-                lastBtn.onclick = () => changePage(totalPages);
-                pagination.appendChild(lastBtn);
-            }
-
-            // Next button
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'page-btn';
-            nextBtn.textContent = '下一页 →';
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => changePage(currentPage + 1);
-            pagination.appendChild(nextBtn);
-        }
-
-        function changePage(page) {
-            currentPage = page;
-            renderTable();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Toggle Proxy Selection
-        function toggleProxySelection(id) {
-            const proxy = allProxies.find(p => p.id === id);
-            if (proxy) {
-                proxy.selected = !proxy.selected;
-                renderTable();
-            }
-        }
-
-        function toggleSelectAll() {
-            const checked = document.getElementById('selectAllCheckbox').checked;
-            filteredProxies.forEach(proxy => {
-                proxy.selected = checked;
-            });
-            renderTable();
-        }
-
-        function selectAll() {
-            document.getElementById('selectAllCheckbox').checked = true;
-            toggleSelectAll();
-            closeAllDropdowns();
-        }
-
-        function deselectAll() {
-            document.getElementById('selectAllCheckbox').checked = false;
-            toggleSelectAll();
-            closeAllDropdowns();
-        }
-
-        // Copy Functions
-        function copyProxy(id) {
-            const proxy = allProxies.find(p => p.id === id);
-            if (proxy) {
-                copyToClipboard(`${proxy.ip}:${proxy.port}`);
-                showToast('已复制到剪贴板', 'success');
-            }
-        }
-
-        function copySelected() {
-            const selected = allProxies.filter(p => p.selected);
-            if (selected.length === 0) {
-                showToast('请先选择代理', 'warning');
-                return;
-            }
-            const text = selected.map(p => `${p.ip}:${p.port}`).join('\n');
-            copyToClipboard(text);
-            showToast(`已复制 ${selected.length} 个代理`, 'success');
-            closeAllDropdowns();
-        }
-
-        function copyToClipboard(text) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text);
-            } else {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-            }
-        }
-
-        // Export Functions
-        function exportData(format) {
-            const proxies = filteredProxies;
-            let content = '';
-            let filename = `proxies_${Date.now()}`;
-
-            if (format === 'txt') {
-                content = proxies.map(p => `${p.ip}:${p.port}`).join('\n');
-                filename += '.txt';
-            } else if (format === 'csv') {
-                content = 'IP,Port,Country,ISP\n' + proxies.map(p => `${p.ip},${p.port},${p.country},${p.isp}`).join('\n');
-                filename += '.csv';
-            } else if (format === 'json') {
-                content = JSON.stringify(proxies.map(p => ({
-                    ip: p.ip,
-                    port: p.port,
-                    country: p.country,
-                    isp: p.isp
-                })), null, 2);
-                filename += '.json';
-            }
-
-            downloadFile(content, filename);
-            showToast(`已导出 ${proxies.length} 个代理`, 'success');
-            closeAllDropdowns();
-        }
-
-        function exportSelected() {
-            const selected = allProxies.filter(p => p.selected);
-            if (selected.length === 0) {
-                showToast('请先选择代理', 'warning');
-                return;
-            }
-            const content = selected.map(p => `${p.ip}:${p.port}`).join('\n');
-            downloadFile(content, `proxies_selected_${Date.now()}.txt`);
-            showToast(`已导出 ${selected.length} 个代理`, 'success');
-            closeAllDropdowns();
-        }
-
-        function downloadFile(content, filename) {
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        // Toggle Favorite
-        function toggleFavorite(id) {
-            if (favorites.has(id)) {
-                favorites.delete(id);
-            } else {
-                favorites.add(id);
-            }
-            localStorage.setItem('favorites', JSON.stringify([...favorites]));
-            renderTable();
-        }
-
-        // Save Filter
-        function saveCurrentFilter() {
-            const filterName = prompt('请输入筛选方案名称:');
-            if (!filterName) return;
-
-            const filter = {
-                name: filterName,
-                country: document.getElementById('countryFilter').value,
-                port: document.getElementById('portFilter').value,
-                isp: document.getElementById('ispFilter').value,
-                search: document.getElementById('searchInput').value
-            };
-
-            savedFiltersList.push(filter);
-            localStorage.setItem('savedFilters', JSON.stringify(savedFiltersList));
-            loadSavedFilters();
-            showToast('筛选方案已保存', 'success');
-        }
-
-        function loadSavedFilters() {
-            const container = document.getElementById('savedFilters');
-            container.innerHTML = '';
-            savedFiltersList.forEach((filter, index) => {
-                const tag = document.createElement('div');
-                tag.className = 'saved-filter-tag';
-                tag.innerHTML = `
-                    <span onclick="applySavedFilter(${index})">${filter.name}</span>
-                    <span class="remove" onclick="removeSavedFilter(${index})">✕</span>
-                `;
-                container.appendChild(tag);
-            });
-        }
-
-        function applySavedFilter(index) {
-            const filter = savedFiltersList[index];
-            document.getElementById('countryFilter').value = filter.country;
-            document.getElementById('portFilter').value = filter.port;
-            document.getElementById('ispFilter').value = filter.isp;
-            document.getElementById('searchInput').value = filter.search;
+        // 监听国家筛选器变化
+        document.getElementById('countryFilter').addEventListener('change', function() {
+            currentCountryFilter = this.value;
             applyFilters();
-            showToast(`已应用筛选: ${filter.name}`, 'success');
-        }
-
-        function removeSavedFilter(index) {
-            savedFiltersList.splice(index, 1);
-            localStorage.setItem('savedFilters', JSON.stringify(savedFiltersList));
-            loadSavedFilters();
-        }
-
-        // Theme Toggle
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-
-            const icon = document.getElementById('themeIcon');
-            const text = document.getElementById('themeText');
-            if (newTheme === 'dark') {
-                icon.textContent = '☀️';
-                text.textContent = '明亮模式';
-            } else {
-                icon.textContent = '🌙';
-                text.textContent = '暗黑模式';
-            }
-        }
-
-        function loadTheme() {
-            const theme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', theme);
-            const icon = document.getElementById('themeIcon');
-            const text = document.getElementById('themeText');
-            if (theme === 'dark') {
-                icon.textContent = '☀️';
-                text.textContent = '明亮模式';
-            }
-        }
-
-        // Refresh Data
-        function refreshData() {
-            showToast('正在刷新数据...', 'success');
-            fetchProxyData();
-        }
-
-        // Update Last Update Time
-        function updateLastUpdate() {
-            if (!lastUpdateTime) return;
-
-            const element = document.getElementById('lastUpdate');
-            const now = new Date();
-            const diff = Math.floor((now - lastUpdateTime) / 1000 / 60);
-
-            if (diff < 1) {
-                element.textContent = '刚刚更新';
-            } else if (diff < 60) {
-                element.textContent = `${diff}分钟前更新`;
-            } else {
-                const hours = Math.floor(diff / 60);
-                element.textContent = `${hours}小时前更新`;
-            }
-        }
-
-        // Update time every minute
-        setInterval(updateLastUpdate, 60000);
-
-        // Dropdown Toggle
-        function toggleDropdown(id) {
-            closeAllDropdowns();
-            const dropdown = document.getElementById(id).parentElement;
-            dropdown.classList.toggle('active');
-            event.stopPropagation();
-        }
-
-        function closeAllDropdowns() {
-            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
-        }
-
-        document.addEventListener('click', closeAllDropdowns);
-
-        // Toast Notification
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toastIcon');
-            const msg = document.getElementById('toastMessage');
-
-            toast.className = `toast ${type}`;
-
-            if (type === 'success') icon.textContent = '✅';
-            else if (type === 'error') icon.textContent = '❌';
-            else if (type === 'warning') icon.textContent = '⚠️';
-
-            msg.textContent = message;
-            toast.classList.add('show');
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
+        });
     </script>
 </body>
 </html>
