@@ -1,11 +1,9 @@
 name: Rust CF Scan
 
 on:
-  workflow_dispatch: # Memungkinkan dijalankan secara manual
-  # Workflow dijalankan otomatis tiap 6 jam
+  workflow_dispatch: # 可以手动运行
   #schedule:
-   # - cron: '0 */6 * * *'  # Setiap 6 jam (00:00, 06:00, 12:00, 18:00 UTC)
-
+  #  - cron: '0 */6 * * *'  # 每 6 小时运行一次
 
 jobs:
   update-proxies:
@@ -17,7 +15,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        token: ${{ secrets.GIT_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}   # 用默认令牌即可
 
     - name: 🛠️ Install Rust Toolchain
       uses: dtolnay/rust-toolchain@stable
@@ -38,6 +36,5 @@ jobs:
         git config --global user.email "actions@github.com"
         git add Data/alive.txt Data/Country-ALIVE.txt
         git commit -m " 🔁 Alive & Country-ALIVE"
-        git push origin main --force
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/<你的用户名>/<你的仓库名>.git main --force
       shell: bash
-
