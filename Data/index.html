@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProxyIP Filter - 高端代理IP筛选器</title>
+    <title>ProxyIP Filter · 高端代理筛选器</title>
+    <!-- 国家名称映射文件 (请确保 countryMap.js 存在于相同目录) -->
+    <script src="countryMap.js"></script>
     <style>
         * {
             margin: 0;
@@ -77,6 +79,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .logo {
@@ -95,6 +99,7 @@
             display: flex;
             gap: 2rem;
             font-size: 0.9rem;
+            flex-wrap: wrap;
         }
 
         .stat-item {
@@ -235,6 +240,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px;
         }
 
         thead {
@@ -251,6 +257,7 @@
             color: rgba(255, 255, 255, 0.9);
             cursor: pointer;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         th:hover {
@@ -269,6 +276,7 @@
         td {
             padding: 1rem;
             color: rgba(255, 255, 255, 0.9);
+            word-break: break-word;
         }
 
         .copy-btn {
@@ -303,7 +311,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* 旋转动画（刷新按钮） */
         .rotating {
             animation: spin 1s linear infinite;
         }
@@ -480,8 +487,6 @@
             color: #f093fb;
         }
     </style>
-    <!-- 引入国家映射文件 -->
-    <script src="countryMap.js"></script>
 </head>
 <body>
     <div class="bg-animation"></div>
@@ -515,7 +520,7 @@
     <div class="container">
         <!-- 筛选面板 -->
         <div class="glass-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
                 <h2 style="font-size: 1.5rem;">🔍 智能筛选</h2>
                 <div class="update-time" id="updateTime">数据加载中...</div>
             </div>
@@ -550,7 +555,7 @@
                 当前筛选: <strong id="currentCountry"></strong> 共 <strong id="currentCount">0</strong> 条代理
             </div>
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
                 <h2 style="font-size: 1.5rem; margin: 0;">📊 代理列表</h2>
                 <button class="btn btn-copy-all" id="copyAllBtn" onclick="copyAllProxies()" style="display: none;">
                     📋 全部复制当前国家
@@ -586,388 +591,374 @@
 
     <!-- 页脚 -->
     <div class="footer">
-        <p>数据来源: <a href="https://xy.148668.xyz/" target="_blank">Kudog xy提供</a></p>
-        <p>每日自动更新 | Made with ❤️</p>
+        <p>数据来源: <a href="https://xy.148688.xyz" target="_blank">kudogxy提供</a> | 每日自动更新</p>
+        <p>Made with ❤️</p>
     </div>
 
     <script>
-        let allData = [];
-        let filteredData = [];
-        let lastUpdateTime = null;
-        let currentCountryFilter = '';
+        (function() {
+            // ---------- 全局变量 ----------
+            let allData = [];                // 原始数据
+            let filteredData = [];            // 筛选后数据
+            let lastUpdateTime = null;
+            let currentCountryFilter = '';     // 当前选择的国家（用于复制按钮）
 
-        // 分页相关
-        let currentPage = 1;
-        const pageSize = 50;
+            // 分页相关
+            let currentPage = 1;
+            const PAGE_SIZE = 50;
 
-        // 创建浮动粒子
-        function createParticles() {
-            for (let i = 0; i < 50; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 20 + 's';
-                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                document.body.appendChild(particle);
-            }
-        }
+            // 排序状态
+            let sortDirection = { ip: false, port: false, country: false, company: false };
 
-        // 显示Toast提示
-        function showToast(message, duration = 3000) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), duration);
-        }
-
-        // 更新时间显示
-        function updateTimeDisplay() {
-            if (lastUpdateTime) {
-                const timeStr = lastUpdateTime.toLocaleString('zh-CN', {
-                    year: 'numeric', month: '2-digit', day: '2-digit',
-                    hour: '2-digit', minute: '2-digit', second: '2-digit'
-                });
-                document.getElementById('updateTime').textContent = `最后更新: ${timeStr}`;
-            }
-        }
-
-        // 复制所有当前国家代理
-        function copyAllProxies() {
-            if (filteredData.length === 0 || !currentCountryFilter) {
-                showToast('❌ 没有可复制的数据');
-                return;
-            }
-
-            const proxyList = filteredData.map(item => `${item.ip}:${item.port}`).join('\n');
-            navigator.clipboard.writeText(proxyList).then(() => {
-                showToast(`✅ 已复制 ${filteredData.length} 条 ${currentCountryFilter} 代理到剪贴板！`);
-            }).catch(err => {
-                console.error('复制失败:', err);
-                showToast('❌ 复制失败，请重试');
-            });
-        }
-
-        // 更新复制按钮和筛选信息显示
-        function updateCopyButton() {
-            const copyBtn = document.getElementById('copyAllBtn');
-            const filterInfo = document.getElementById('currentFilterInfo');
+            // DOM 元素
+            const totalCountEl = document.getElementById('totalCount');
+            const countryCountEl = document.getElementById('countryCount');
+            const filteredCountEl = document.getElementById('filteredCount');
+            const updateTimeEl = document.getElementById('updateTime');
+            const tableBody = document.getElementById('tableBody');
+            const paginationDiv = document.getElementById('pagination');
+            const paginationInfo = document.getElementById('paginationInfo');
+            const copyAllBtn = document.getElementById('copyAllBtn');
+            const currentFilterInfo = document.getElementById('currentFilterInfo');
             const currentCountryEl = document.getElementById('currentCountry');
             const currentCountEl = document.getElementById('currentCount');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const refreshIcon = document.getElementById('refreshIcon');
 
-            if (currentCountryFilter && filteredData.length > 0) {
-                copyBtn.style.display = 'flex';
-                filterInfo.style.display = 'block';
-                currentCountryEl.textContent = currentCountryFilter;
-                currentCountEl.textContent = filteredData.length.toLocaleString();
-            } else {
-                copyBtn.style.display = 'none';
-                filterInfo.style.display = 'none';
+            // 筛选输入元素
+            const countryFilter = document.getElementById('countryFilter');
+            const portFilter = document.getElementById('portFilter');
+            const companyFilter = document.getElementById('companyFilter');
+
+            // ---------- 辅助函数 ----------
+            function showToast(message, duration = 3000) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), duration);
             }
-        }
 
-        // 加载数据
-        async function loadData() {
-            try {
-                console.log('🔄 开始加载数据...');
-                const timestamp = new Date().getTime();
-                
-                const response = await fetch(`alive.txt?t=${timestamp}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            function updateTimeDisplay() {
+                if (lastUpdateTime) {
+                    const timeStr = lastUpdateTime.toLocaleString('zh-CN', {
+                        year: 'numeric', month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    });
+                    updateTimeEl.textContent = `最后更新: ${timeStr}`;
+                } else {
+                    updateTimeEl.textContent = '数据加载中...';
                 }
-                
-                const text = await response.text();
-                
-                if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-                    throw new Error('读取到了HTML文件，而不是数据文件！');
+            }
+
+            // 更新统计数字
+            function updateStats() {
+                totalCountEl.textContent = allData.length.toLocaleString();
+                const uniqueCountries = new Set(allData.map(item => item.country));
+                countryCountEl.textContent = uniqueCountries.size;
+                filteredCountEl.textContent = filteredData.length.toLocaleString();
+            }
+
+            // 更新复制按钮和筛选信息显示
+            function updateCopyButton() {
+                if (currentCountryFilter && filteredData.length > 0) {
+                    copyAllBtn.style.display = 'flex';
+                    currentFilterInfo.style.display = 'block';
+                    currentCountryEl.textContent = currentCountryFilter;
+                    currentCountEl.textContent = filteredData.length.toLocaleString();
+                } else {
+                    copyAllBtn.style.display = 'none';
+                    currentFilterInfo.style.display = 'none';
                 }
-                
-                console.log('📄 数据长度:', text.length, '字符');
-                
-                const lines = text.trim().split('\n');
-                console.log('📊 总行数:', lines.length);
-                
-                allData = lines
-                    .filter(line => line.trim())
-                    .map((line, index) => {
-                        const parts = line.split(',');
-                        
-                        if (parts.length < 3) {
-                            console.warn(`⚠️ 第${index + 1}行数据不完整:`, line);
-                            return null;
-                        }
-                        
-                        const ip = parts[0].trim();
-                        const port = parts[1].trim();
-                        const countryCode = parts[2].trim();
-                        const company = parts.length > 3 ? parts.slice(3).join(',').trim() : 'Unknown';
-                        
-                        const country = countryNames[countryCode] || countryCode;
-                        
-                        return { ip, port, countryCode, country, company };
-                    })
-                    .filter(item => item !== null);
-                
-                console.log('✅ 成功解析', allData.length, '条数据');
-                
-                filteredData = [...allData];
+            }
+
+            // 填充国家下拉框
+            function populateCountryFilter() {
+                const countries = [...new Set(allData.map(item => item.country))].sort();
+                countryFilter.innerHTML = '<option value="">全部国家</option>';
+                countries.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c;
+                    option.textContent = c;
+                    countryFilter.appendChild(option);
+                });
+            }
+
+            // 应用筛选（从表单读取值）
+            function applyFilters() {
+                const country = countryFilter.value;
+                const port = portFilter.value.trim();
+                const company = companyFilter.value.trim().toLowerCase();
+
+                currentCountryFilter = country;   // 用于复制按钮
+
+                filteredData = allData.filter(item => {
+                    return (!country || item.country === country) &&
+                           (!port || item.port.includes(port)) &&
+                           (!company || item.company.toLowerCase().includes(company));
+                });
+
+                // 重置到第一页
                 currentPage = 1;
-                currentCountryFilter = '';
-                lastUpdateTime = new Date();
                 updateStats();
-                populateCountryFilter();
                 renderTable();
                 renderPagination();
                 updateCopyButton();
-                updateTimeDisplay();
-                
-            } catch (error) {
-                console.error('❌ 加载失败:', error);
-                document.getElementById('tableBody').innerHTML = 
-                    `<tr><td colspan="5" style="text-align: center; color: #ff6b6b;">
-                        <strong>❌ 数据加载失败: ${error.message}</strong><br><br>
-                        <small>请确认 alive.txt 文件在 Data 文件夹内</small><br>
-                        <small>按 F12 查看控制台详细信息</small>
-                    </td></tr>`;
-                showToast('❌ 数据加载失败');
-            }
-        }
-
-        // 刷新数据
-        async function refreshData() {
-            const btn = document.getElementById('refreshBtn');
-            const icon = document.getElementById('refreshIcon');
-            
-            if (btn.disabled) return;
-            
-            btn.disabled = true;
-            icon.classList.add('rotating');
-            
-            try {
-                await loadData();
-                showToast('✅ 数据刷新成功！');
-            } catch (error) {
-                showToast('❌ 刷新失败');
-            } finally {
-                setTimeout(() => {
-                    btn.disabled = false;
-                    icon.classList.remove('rotating');
-                }, 1000);
-            }
-        }
-
-        // 更新统计
-        function updateStats() {
-            document.getElementById('totalCount').textContent = allData.length.toLocaleString();
-            const countries = new Set(allData.map(item => item.country));
-            document.getElementById('countryCount').textContent = countries.size;
-            document.getElementById('filteredCount').textContent = filteredData.length.toLocaleString();
-        }
-
-        // 填充国家筛选器
-        function populateCountryFilter() {
-            const countries = [...new Set(allData.map(item => item.country))].sort();
-            const select = document.getElementById('countryFilter');
-            select.innerHTML = '<option value="">全部国家</option>';
-            
-            countries.forEach(country => {
-                const option = document.createElement('option');
-                option.value = country;
-                option.textContent = country;
-                select.appendChild(option);
-            });
-        }
-
-        // 应用筛选
-        function applyFilters() {
-            const country = document.getElementById('countryFilter').value;
-            const port = document.getElementById('portFilter').value.trim();
-            const company = document.getElementById('companyFilter').value.trim().toLowerCase();
-
-            currentCountryFilter = country;
-
-            filteredData = allData.filter(item => {
-                return (!country || item.country === country) &&
-                       (!port || item.port.includes(port)) &&
-                       (!company || item.company.toLowerCase().includes(company));
-            });
-
-            currentPage = 1;
-            updateStats();
-            renderTable();
-            renderPagination();
-            updateCopyButton();
-        }
-
-        // 重置筛选
-        function resetFilters() {
-            document.getElementById('countryFilter').value = '';
-            document.getElementById('portFilter').value = '';
-            document.getElementById('companyFilter').value = '';
-            filteredData = [...allData];
-            currentPage = 1;
-            currentCountryFilter = '';
-            updateStats();
-            renderTable();
-            renderPagination();
-            updateCopyButton();
-            showToast('🔄 筛选已重置');
-        }
-
-        // 渲染表格（带分页）
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            
-            if (filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">没有找到匹配的数据</td></tr>';
-                document.getElementById('pagination').innerHTML = '';
-                document.getElementById('paginationInfo').textContent = '';
-                return;
             }
 
-            const total = filteredData.length;
-            const totalPages = Math.max(1, Math.ceil(total / pageSize));
-            if (currentPage > totalPages) currentPage = totalPages;
+            // 重置筛选
+            window.resetFilters = function() {
+                countryFilter.value = '';
+                portFilter.value = '';
+                companyFilter.value = '';
+                filteredData = [...allData];
+                currentPage = 1;
+                currentCountryFilter = '';
+                updateStats();
+                renderTable();
+                renderPagination();
+                updateCopyButton();
+                showToast('🔄 筛选已重置');
+            };
 
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = Math.min(startIndex + pageSize, total);
-            const displayData = filteredData.slice(startIndex, endIndex);
+            // 渲染表格（分页）
+            function renderTable() {
+                if (filteredData.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">没有找到匹配的数据</td></tr>';
+                    paginationDiv.innerHTML = '';
+                    paginationInfo.textContent = '';
+                    return;
+                }
 
-            const rows = displayData.map(item => {
-                const safeIP = item.ip.replace(/'/g, "\\'");
-                const safePort = item.port.replace(/'/g, "\\'");
-                
-                return `
-                    <tr>
+                const total = filteredData.length;
+                const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+                if (currentPage > totalPages) currentPage = totalPages;
+
+                const start = (currentPage - 1) * PAGE_SIZE;
+                const end = Math.min(start + PAGE_SIZE, total);
+                const pageData = filteredData.slice(start, end);
+
+                let html = '';
+                pageData.forEach(item => {
+                    // 简单转义单引号，防止 onclick 字符串中断
+                    const proxyStr = `${item.ip}:${item.port}`.replace(/'/g, "\\'");
+                    html += `<tr>
                         <td>${item.ip}</td>
                         <td>${item.port}</td>
                         <td><span class="tag tag-country">${item.country}</span></td>
                         <td>${item.company}</td>
                         <td>
-                            <button class="copy-btn tooltip" onclick="copyToClipboard('${safeIP}:${safePort}')">
+                            <button class="copy-btn tooltip" onclick="copyToClipboard('${proxyStr}')">
                                 📋 复制
                                 <span class="tooltiptext">复制到剪贴板</span>
                             </button>
                         </td>
-                    </tr>
-                `;
-            }).join('');
+                    </tr>`;
+                });
+                tableBody.innerHTML = html;
 
-            tbody.innerHTML = rows;
-
-            const info = `第 ${currentPage} / ${totalPages} 页，每页 ${pageSize} 条，共 ${total} 条`;
-            document.getElementById('paginationInfo').textContent = info;
-        }
-
-        // 渲染分页控件
-        function renderPagination() {
-            const container = document.getElementById('pagination');
-            container.innerHTML = '';
-
-            if (filteredData.length === 0) return;
-
-            const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
-
-            const prevBtn = document.createElement('button');
-            prevBtn.textContent = '«';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderTable();
-                    renderPagination();
-                }
-            };
-            container.appendChild(prevBtn);
-
-            const maxButtons = 7;
-            let start = Math.max(1, currentPage - 3);
-            let end = Math.min(totalPages, start + maxButtons - 1);
-            if (end - start + 1 < maxButtons) {
-                start = Math.max(1, end - maxButtons + 1);
+                paginationInfo.textContent = `第 ${currentPage} / ${totalPages} 页，每页 ${PAGE_SIZE} 条，共 ${total} 条`;
             }
 
-            for (let i = start; i <= end; i++) {
-                const btn = document.createElement('button');
-                btn.textContent = i;
-                if (i === currentPage) {
-                    btn.classList.add('active');
+            // 渲染分页控件
+            function renderPagination() {
+                if (filteredData.length === 0) {
+                    paginationDiv.innerHTML = '';
+                    return;
                 }
-                btn.onclick = () => {
-                    currentPage = i;
-                    renderTable();
-                    renderPagination();
-                };
-                container.appendChild(btn);
+
+                const totalPages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
+                let btns = '';
+
+                // 上一页
+                btns += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">«</button>`;
+
+                // 页码逻辑：显示最多7个按钮
+                let start = Math.max(1, currentPage - 3);
+                let end = Math.min(totalPages, start + 6);
+                if (end - start < 6) start = Math.max(1, end - 6);
+
+                for (let i = start; i <= end; i++) {
+                    btns += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                }
+
+                // 下一页
+                btns += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">»</button>`;
+
+                paginationDiv.innerHTML = btns;
             }
 
-            const nextBtn = document.createElement('button');
-            nextBtn.textContent = '»';
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
+            // 分页跳转（全局函数，供onclick调用）
+            window.changePage = function(page) {
+                const totalPages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
+                if (page < 1 || page > totalPages) return;
+                currentPage = page;
+                renderTable();
+                renderPagination();
+            };
+
+            // 排序
+            window.sortTable = function(colIndex) {
+                const keys = ['ip', 'port', 'country', 'company'];
+                const key = keys[colIndex];
+                // 切换方向
+                sortDirection[key] = !sortDirection[key];
+                const direction = sortDirection[key] ? 1 : -1;
+
+                filteredData.sort((a, b) => {
+                    let aVal = a[key];
+                    let bVal = b[key];
+                    if (key === 'port') {
+                        aVal = parseInt(aVal, 10);
+                        bVal = parseInt(bVal, 10);
+                    }
+                    if (aVal === bVal) return 0;
+                    return (aVal > bVal ? 1 : -1) * direction;
+                });
+
+                currentPage = 1;
+                renderTable();
+                renderPagination();
+            };
+
+            // 复制单个代理
+            window.copyToClipboard = function(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('✅ 已复制: ' + text);
+                }).catch(() => {
+                    showToast('❌ 复制失败');
+                });
+            };
+
+            // 复制当前筛选结果（全部）
+            window.copyAllProxies = function() {
+                if (!filteredData.length || !currentCountryFilter) {
+                    showToast('❌ 没有可复制的数据');
+                    return;
+                }
+                const proxyList = filteredData.map(item => `${item.ip}:${item.port}`).join('\n');
+                navigator.clipboard.writeText(proxyList).then(() => {
+                    showToast(`✅ 已复制 ${filteredData.length} 条 ${currentCountryFilter} 代理`);
+                }).catch(() => {
+                    showToast('❌ 复制失败，请重试');
+                });
+            };
+
+            // ---------- 数据加载 ----------
+            async function loadData(isRefresh = false) {
+                // 保存旧数据，以便加载失败时恢复
+                const oldAllData = allData;
+                const oldFiltered = filteredData;
+                const oldCountryFilter = currentCountryFilter;
+                const oldPage = currentPage;
+
+                // 显示加载状态（仅在首次或无数据时显示loader）
+                if (!isRefresh || allData.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;"><div class="loader"></div><p>正在加载数据...</p></td></tr>`;
+                }
+
+                try {
+                    const timestamp = Date.now();
+                    // 使用用户指定的新数据源
+                    const url = `https://raw.githubusercontent.com/Mayumiwandi/Emilia/refs/heads/main/Data/alive.txt?t=${timestamp}`;
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const text = await response.text();
+                    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                        throw new Error('响应内容不是有效的代理数据');
+                    }
+
+                    const lines = text.trim().split('\n').filter(l => l.trim());
+                    const newData = lines.map((line, idx) => {
+                        const parts = line.split(',');
+                        if (parts.length < 3) return null;
+                        const ip = parts[0].trim();
+                        const port = parts[1].trim();
+                        const countryCode = parts[2].trim();
+                        // 公司名可能包含逗号，合并剩余部分
+                        const company = parts.length > 3 ? parts.slice(3).join(',').trim() : 'Unknown';
+                        // 使用全局 countryNames（来自 countryMap.js），若不存在则回退为code
+                        const country = (typeof window.countryNames !== 'undefined' && window.countryNames[countryCode]) ? window.countryNames[countryCode] : countryCode;
+                        return { ip, port, countryCode, country, company };
+                    }).filter(item => item !== null);
+
+                    if (newData.length === 0) throw new Error('数据文件为空');
+
+                    allData = newData;
+                    filteredData = [...allData];
+                    currentPage = 1;
+                    currentCountryFilter = '';  // 重置国家筛选
+                    lastUpdateTime = new Date();
+
+                    // 更新UI
+                    populateCountryFilter();
+                    updateStats();
                     renderTable();
                     renderPagination();
+                    updateCopyButton();
+                    updateTimeDisplay();
+
+                    showToast('✅ 数据加载成功');
+                } catch (error) {
+                    console.error('加载失败:', error);
+                    // 如果之前有旧数据，恢复
+                    if (oldAllData.length > 0) {
+                        allData = oldAllData;
+                        filteredData = oldFiltered;
+                        currentPage = oldPage;
+                        currentCountryFilter = oldCountryFilter;
+                        renderTable();
+                        renderPagination();
+                        updateCopyButton();
+                        updateStats(); // 恢复统计
+                        showToast('⚠️ 数据刷新失败，使用上次缓存', 4000);
+                    } else {
+                        // 首次加载失败，显示错误提示
+                        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ff6b6b;">
+                            <strong>❌ 加载失败: ${error.message}</strong><br>
+                            <small>请检查网络或数据源地址</small>
+                        </td></tr>`;
+                        updateTimeEl.textContent = '加载出错';
+                    }
                 }
+            }
+
+            // 刷新按钮
+            window.refreshData = async function() {
+                if (refreshBtn.disabled) return;
+                refreshBtn.disabled = true;
+                refreshIcon.classList.add('rotating');
+
+                await loadData(true);  // 传入true表示是刷新操作
+
+                refreshBtn.disabled = false;
+                refreshIcon.classList.remove('rotating');
             };
-            container.appendChild(nextBtn);
-        }
 
-        // 复制到剪贴板
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('✅ 已复制: ' + text);
-            }).catch(err => {
-                console.error('复制失败:', err);
-                showToast('❌ 复制失败');
-            });
-        }
-
-        // 表格排序
-        let sortDirection = {};
-        function sortTable(columnIndex) {
-            const key = ['ip', 'port', 'country', 'company'][columnIndex];
-            sortDirection[key] = !sortDirection[key];
-            
-            filteredData.sort((a, b) => {
-                let aVal = a[key];
-                let bVal = b[key];
-                
-                if (key === 'port') {
-                    aVal = parseInt(aVal);
-                    bVal = parseInt(bVal);
+            // 初始化粒子背景
+            function createParticles() {
+                for (let i = 0; i < 40; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'particle';
+                    p.style.left = Math.random() * 100 + '%';
+                    p.style.animationDelay = Math.random() * 20 + 's';
+                    p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                    document.body.appendChild(p);
                 }
-                
-                if (aVal === bVal) return 0;
-                if (sortDirection[key]) {
-                    return aVal > bVal ? 1 : -1;
-                } else {
-                    return aVal < bVal ? 1 : -1;
-                }
+            }
+
+            // ---------- 事件绑定 ----------
+            // 统一使用 input 事件（对 select 也有效）
+            [countryFilter, portFilter, companyFilter].forEach(input => {
+                input.addEventListener('input', applyFilters);
             });
-            
-            currentPage = 1;
-            renderTable();
-            renderPagination();
-        }
 
-        // 初始化
-        createParticles();
-        loadData();
-
-        // 实时筛选
-        ['countryFilter', 'portFilter', 'companyFilter'].forEach(id => {
-            document.getElementById(id).addEventListener('input', applyFilters);
-        });
-
-        // 监听国家筛选器变化
-        document.getElementById('countryFilter').addEventListener('change', function() {
-            currentCountryFilter = this.value;
-            applyFilters();
-        });
+            // 启动
+            createParticles();
+            loadData(false); // 首次加载
+        })();
     </script>
 </body>
 </html>
